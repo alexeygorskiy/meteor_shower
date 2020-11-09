@@ -10,20 +10,20 @@ def center_img(img):
 pyglet.resource.path = ['../resources']
 pyglet.resource.reindex()
 
-game_window = pyglet.window.Window(800, 800, caption="Car Environment", visible=False)
+game_window = pyglet.window.Window(800, 800, caption="Meteor Shower", visible=False)
 main_batch = pyglet.graphics.Batch()
 
-car_img = pyglet.resource.image("car.png")
-wall_img = pyglet.resource.image("wall.png")
+spaceship_img = pyglet.resource.image("car.png")
+meteor_img = pyglet.resource.image("wall.png")
 
-center_img(car_img)
-center_img(wall_img)
+center_img(spaceship_img)
+center_img(meteor_img)
 
-car_obj = physicalobject.PhysicalObject(human_controlled = True, img=car_img, x=50, y=50, batch=main_batch)
-car_obj2 = physicalobject.PhysicalObject(img=car_img, x=50, y=50, batch=main_batch)
+spaceship_1 = physicalobject.PhysicalObject(human_controlled = True, img=spaceship_img, x=50, y=50, batch=main_batch)
+spaceship_2 = physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch)
 
 #TODO: only draw the walls once as their position won't change
-wall_obj = pyglet.sprite.Sprite(img=wall_img, x=400, y=400, batch=main_batch)
+meteor = pyglet.sprite.Sprite(img=meteor_img, x=400, y=400, batch=main_batch)
 
 label = pyglet.text.Label(text='Hello, world',
                           font_name='Times New Roman',
@@ -31,28 +31,28 @@ label = pyglet.text.Label(text='Hello, world',
                           x=400, y=400,
                           anchor_x='center', anchor_y='center', batch=main_batch)
 
-cars = [car_obj, car_obj2]
+spaceships = [spaceship_1, spaceship_2]
 
 def reset():
-    for car in cars:
-        car.reset()
+    for spaceship in spaceships:
+        spaceship.reset()
 
 
 def update(dt):
     highest_fitness = -150
     all_dead = True
 
-    for car in cars:
-        car.update(dt=dt)
+    for spaceship in spaceships:
+        spaceship.update(dt=dt)
 
-        if not car.dead:
+        if not spaceship.dead:
             all_dead = False
 
-        if car.fitness > highest_fitness:
-            highest_fitness = car.fitness
+        if spaceship.fitness > highest_fitness:
+            highest_fitness = spaceship.fitness
 
     #label.text = str(highest_fitness)
-    label.text = str(int(car_obj.time_since_reward))
+    label.text = str(int(spaceship_1.time_since_reward))
 
     if all_dead:
         reset()
@@ -63,7 +63,7 @@ def on_draw():
     game_window.clear()
     main_batch.draw()
 
-game_window.push_handlers(car_obj.key_handler)
+game_window.push_handlers(spaceship_1.key_handler)
 
 game_window.set_visible()
 
