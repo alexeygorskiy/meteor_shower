@@ -1,16 +1,24 @@
 import pyglet
+import random
 from pyglet.window import key
 
 class PhysicalObject(pyglet.sprite.Sprite):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, human_controlled=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.human_controlled = human_controlled
+        if human_controlled:
+            self.key_handler = key.KeyStateHandler()
+
+        self.dead = False
         self.sight = 10
         self.speed = 100
-        self.key_handler = key.KeyStateHandler()
+
+        self.collisions = [0,0,0,0,0,0,0,0]
 
         self.fitness = 0
+        self.time_since_reward = 0
         self.next_gate = 0
         self.reward_gates = [
             # achieved, x bounds, y bounds
@@ -36,6 +44,14 @@ class PhysicalObject(pyglet.sprite.Sprite):
         ]
 
 
+    def reset(self):
+        self.dead = False
+        self.time_since_reward = 0
+        self.fitness = 0
+        self.next_gate = 0
+        self.x = 50
+        self.y = 50
+        self.collisions = [0, 0, 0, 0, 0, 0, 0, 0]
 
     def update_fitness(self):
         x_bounds = self.reward_gates[self.next_gate][0]
@@ -43,32 +59,64 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
         if x_bounds[0]<=self.x<=x_bounds[1] and y_bounds[0]<=self.y<=y_bounds[1]:
             self.fitness += 1
+            self.time_since_reward = 0
             if self.next_gate == len(self.reward_gates)-1:
                 self.next_gate = 0
                 self.fitness += 9
             else:
                 self.next_gate += 1
 
+    def move_human(self, dt):
+        constant = self.speed * dt
 
-
-
-
-
-    def update(self, dt):
         if self.key_handler[key.LEFT]:
-            self.x -= self.speed * dt
+            self.x -= constant
 
         if self.key_handler[key.RIGHT]:
-            self.x += self.speed * dt
+            self.x += constant
 
         if self.key_handler[key.UP]:
-            self.y += self.speed * dt
+            self.y += constant
 
         if self.key_handler[key.DOWN]:
-            self.y -= self.speed * dt
+            self.y -= constant
+
+    def move_ai(self, dt):
+        constant = self.speed * dt
+
+        if random.randrange(0,2):
+            self.x -= constant
+
+        if random.randrange(0,2):
+            self.x += constant
+
+        if random.randrange(0,2):
+            self.y += constant
+
+        if random.randrange(0,2):
+            self.y -= constant
+
+    def move(self, dt):
+        if self.human_controlled:
+            self.move_human(dt)
+        else:
+            self.move_ai(dt)
+
+    def update(self, dt):
+        if self.dead:
+            return
+
+        self.time_since_reward += 0.1
+
+        self.update_raypoints()
+
+        self.move(dt)
+
+        if self.is_dead():
+            self.dead = True
+            self.fitness -= 100
 
         self.update_fitness()
-
 
     def is_point_colliding(self, point):
         if ( (100<=point[0]<=700 and 100<=point[1]<=700) or # inner wall
@@ -90,12 +138,12 @@ class PhysicalObject(pyglet.sprite.Sprite):
         corner_points = [pt1, pt2, pt3, pt4]
 
         for point in corner_points:
-            if self.is_point_colliding(point):
+            if self.is_point_colliding(point) or self.time_since_reward >= 40:
                 return True
 
         return False
 
-    def ray_point_collision(self):
+    def update_raypoints(self):
         hw = (self.width/2)
         hh = (self.height/2)
 
@@ -116,8 +164,8 @@ class PhysicalObject(pyglet.sprite.Sprite):
         colliding = []
 
         for point in ray_points:
-            colliding.append(self.is_point_colliding(point))
+            colliding.append(1 if self.is_point_colliding(point) else 0)
 
-        return colliding
+        self.collisions = colliding
 
 

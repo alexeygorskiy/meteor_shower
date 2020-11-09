@@ -15,19 +15,15 @@ main_batch = pyglet.graphics.Batch()
 
 car_img = pyglet.resource.image("car.png")
 wall_img = pyglet.resource.image("wall.png")
-white_pixel_img = pyglet.resource.image("white_pixel.png")
-car_green_img = pyglet.resource.image("car_green.png")
 
 center_img(car_img)
 center_img(wall_img)
-center_img(white_pixel_img)
-center_img(car_green_img)
 
-car_obj = physicalobject.PhysicalObject(img=car_img, x=50, y=50, batch=main_batch)
+car_obj = physicalobject.PhysicalObject(human_controlled = True, img=car_img, x=50, y=50, batch=main_batch)
+car_obj2 = physicalobject.PhysicalObject(img=car_img, x=50, y=50, batch=main_batch)
+
 #TODO: only draw the walls once as their position won't change
 wall_obj = pyglet.sprite.Sprite(img=wall_img, x=400, y=400, batch=main_batch)
-
-#white_pixel1 = physicalobject.PhysicalObject(img=white_pixel_img, ray=True, x=100, y=100, batch=main_batch)
 
 label = pyglet.text.Label(text='Hello, world',
                           font_name='Times New Roman',
@@ -35,24 +31,31 @@ label = pyglet.text.Label(text='Hello, world',
                           x=400, y=400,
                           anchor_x='center', anchor_y='center', batch=main_batch)
 
+cars = [car_obj, car_obj2]
+
+def reset():
+    for car in cars:
+        car.reset()
+
 
 def update(dt):
-    car_obj.update(dt=dt)
-    label.text = str(car_obj.fitness)
+    highest_fitness = -150
+    all_dead = True
 
-    """
-    if car_obj.is_dead():
-        car_obj.opacity = 100
-    else:
-        car_obj.opacity = 255
-    
-    for collision in car_obj.ray_point_collision():
-        if collision:
-            car_obj.image = car_green_img
-            break
-        else:
-            car_obj.image = car_img
-    """
+    for car in cars:
+        car.update(dt=dt)
+
+        if not car.dead:
+            all_dead = False
+
+        if car.fitness > highest_fitness:
+            highest_fitness = car.fitness
+
+    #label.text = str(highest_fitness)
+    label.text = str(int(car_obj.time_since_reward))
+
+    if all_dead:
+        reset()
 
 
 @game_window.event
