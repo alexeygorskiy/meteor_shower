@@ -1,80 +1,123 @@
 import pyglet
-import math
-import numpy as np
 from pyglet.window import key
 
 class PhysicalObject(pyglet.sprite.Sprite):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.velocity_x, self.velocity_y, self.rotation = 0.0, 0.0, 180
 
-        # Set some easy-to-tweak constants
-        self.thrust = 300.0
-        self.rotate_speed = 200.0
-
-        # edge points
-        self.pt1 = np.array((self.position[0], self.position[1]+self.height/2))
-        self.pt2 = np.array((self.position[0]+self.width/2, self.position[1]))
-        self.pt3 = np.array((self.position[0], self.position[1]-self.height/2))
-        self.pt4 = np.array((self.position[0]-self.width/2, self.position[1]))
-        self.update_edges()
-
-        self.edge_points = [self.pt1, self.pt2, self.pt3, self.pt4]
-
+        self.sight = 10
+        self.speed = 100
         self.key_handler = key.KeyStateHandler()
 
+        self.fitness = 0
+        self.next_gate = 0
+        self.reward_gates = [
+            # achieved, x bounds, y bounds
+            [(0,100), (100,110)],
+            [(0,100), (200,210)],
+            [(0,100), (400,410)],
+            [(0,100), (700,710)],
 
-    def check_bounds(self):
-        min_x = -self.image.width / 2
-        min_y = -self.image.height / 2
-        max_x = 800 + self.image.width / 2
-        max_y = 600 + self.image.height / 2
-        if self.x < min_x:
-            self.x = max_x
-        elif self.x > max_x:
-            self.x = min_x
-        if self.y < min_y:
-            self.y = max_y
-        elif self.y > max_y:
-            self.y = min_y
+            [(100,110), (700, 800)],
+            [(200,210), (700, 800)],
+            [(400,410), (700, 800)],
+            [(700,710), (700, 800)],
 
-    def update_edges(self):
-        theta = -np.radians(self.rotation)
+            [(700, 800), (690, 700)],
+            [(700, 800), (390, 400)],
+            [(700, 800), (190, 200)],
+            [(700, 800), (90, 100)],
 
-        r = np.array(((np.cos(theta), -np.sin(theta)),
-                      (np.sin(theta), np.cos(theta))))
+            [(690, 700), (0, 100)],
+            [(390, 400), (0, 100)],
+            [(190, 200), (0, 100)],
+            [(90, 100), (0, 100)],
+        ]
 
-        self.pt1 = abs(r.dot(self.pt1))
-        self.pt2 = abs(r.dot(self.pt2))
-        self.pt3 = abs(r.dot(self.pt3))
-        self.pt4 = abs(r.dot(self.pt4))
+
+
+    def update_fitness(self):
+        x_bounds = self.reward_gates[self.next_gate][0]
+        y_bounds = self.reward_gates[self.next_gate][1]
+
+        if x_bounds[0]<=self.x<=x_bounds[1] and y_bounds[0]<=self.y<=y_bounds[1]:
+            self.fitness += 1
+            if self.next_gate == len(self.reward_gates)-1:
+                self.next_gate = 0
+                self.fitness += 9
+            else:
+                self.next_gate += 1
+
+
+
+
+
 
     def update(self, dt):
-
         if self.key_handler[key.LEFT]:
-            self.rotation -= self.rotate_speed * dt
+            self.x -= self.speed * dt
+
         if self.key_handler[key.RIGHT]:
-            self.rotation += self.rotate_speed * dt
+            self.x += self.speed * dt
 
         if self.key_handler[key.UP]:
-            angle_radians = math.radians(self.rotation)
-            self.x += 100 * dt * math.sin(angle_radians)
-            self.y += 100 * dt * math.cos(angle_radians)
+            self.y += self.speed * dt
 
         if self.key_handler[key.DOWN]:
-            angle_radians = math.radians(self.rotation)
-            self.x += -100 * dt * math.sin(angle_radians)
-            self.y += -100 * dt * math.cos(angle_radians)
+            self.y -= self.speed * dt
 
-        self.update_edges()
-        self.check_bounds()
+        self.update_fitness()
 
 
-    def collides_with(self, other_object):
-        return True
+    def is_point_colliding(self, point):
+        if ( (100<=point[0]<=700 and 100<=point[1]<=700) or # inner wall
+            (point[0]<=0) or    # left wall
+            (800<=point[0]) or  # right wall
+            (point[1]<=0) or       # bottom wall
+            (800<=point[1])   # top wall
+        ):
+            return True
+        else:
+            return False
 
-    def handle_collision_with(self, other_object):
-        self.opacity = 100
+    def is_dead(self):
+        pt1 = (self.x-(self.width/2), self.y+(self.height)/2)
+        pt2 = (pt1[0]+self.width, pt1[1])
+        pt3 = (pt2[0], pt2[1]-self.height)
+        pt4 = (pt3[0]-self.width, pt3[1])
+
+        corner_points = [pt1, pt2, pt3, pt4]
+
+        for point in corner_points:
+            if self.is_point_colliding(point):
+                return True
+
+        return False
+
+    def ray_point_collision(self):
+        hw = (self.width/2)
+        hh = (self.height/2)
+
+        pt1 = (self.x-hw-self.sight, self.y)
+        pt2 = (pt1[0], pt1[1]+hh+self.sight)
+
+        pt3 = (self.x, self.y+hh+self.sight)
+        pt4 = (pt3[0]+hw+self.sight, pt3[1])
+
+        pt5 = (self.x+hw+self.sight, self.y)
+        pt6 = (pt5[0], pt5[1]-hh-self.sight)
+
+        pt7 = (self.x, self.y - hh - self.sight)
+        pt8 = (pt7[0] - hw - self.sight, pt7[1])
+
+        ray_points = [pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8]
+
+        colliding = []
+
+        for point in ray_points:
+            colliding.append(self.is_point_colliding(point))
+
+        return colliding
 
 
