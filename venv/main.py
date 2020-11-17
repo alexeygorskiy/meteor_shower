@@ -19,40 +19,67 @@ meteor_img = pyglet.resource.image("wall.png")
 center_img(spaceship_img)
 center_img(meteor_img)
 
-spaceship_1 = physicalobject.PhysicalObject(human_controlled = True, img=spaceship_img, x=50, y=50, batch=main_batch)
-spaceship_2 = physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch)
+population_size = 100
+spaceships = []
+for i in range(0, population_size):
+    spaceships.append(physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch))
 
 #TODO: only draw the walls once as their position won't change
 meteor = pyglet.sprite.Sprite(img=meteor_img, x=400, y=400, batch=main_batch)
-
 label = pyglet.text.Label(text='Hello, world',
                           font_name='Times New Roman',
                           font_size=36,
                           x=770, y=770,
                           anchor_x='center', anchor_y='center', batch=main_batch)
 
-spaceships = [spaceship_1, spaceship_2]
+
+
+highest_fitness = -150
+highest_fitness_index = -150
+second_highest_fitness = -150
+second_highest_fitness_index = -150
+
 
 def reset():
-    for spaceship in spaceships:
-        spaceship.reset()
+    global highest_fitness
+    global highest_fitness_index
+    global second_highest_fitness
+    global second_highest_fitness_index
+
+    for i in range(0, len(spaceships)):
+        if i!=highest_fitness_index and i!=second_highest_fitness_index:
+            spaceships[i].brain.evolve(spaceships[highest_fitness_index], spaceships[second_highest_fitness_index])
+        spaceships[i].reset()
+
+
+    highest_fitness = -150
+    highest_fitness_index = -150
+    second_highest_fitness = -150
+    second_highest_fitness_index = -150
 
 
 def update(dt):
-    highest_fitness = -150
+    global highest_fitness
+    global highest_fitness_index
+    global second_highest_fitness
+    global second_highest_fitness_index
+
     all_dead = True
 
-    for spaceship in spaceships:
-        spaceship.update(dt=dt)
+    for i in range(0, len(spaceships)):
+        spaceships[i].update(dt=dt)
 
-        if not spaceship.dead:
+        if not spaceships[i].dead:
             all_dead = False
 
-        if spaceship.fitness > highest_fitness:
-            highest_fitness = spaceship.fitness
+        if spaceships[i].fitness > highest_fitness:
+            highest_fitness = spaceships[i].fitness
+            highest_fitness_index = i
+        elif spaceships[i].fitness > second_highest_fitness:
+            second_highest_fitness = spaceships[i].fitness
+            second_highest_fitness_index = i
 
-    #label.text = str(highest_fitness)
-    label.text = str(int(spaceship_1.time_since_reward))
+    label.text = str(highest_fitness)
 
     if all_dead:
         reset()
@@ -63,10 +90,8 @@ def on_draw():
     game_window.clear()
     main_batch.draw()
 
-game_window.push_handlers(spaceship_1.key_handler)
 
 game_window.set_visible()
-
 pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
 

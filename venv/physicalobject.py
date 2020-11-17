@@ -9,6 +9,8 @@ class PhysicalObject(pyglet.sprite.Sprite):
         super().__init__(*args, **kwargs)
 
         self.brain = Brain()
+        self.survival_time_without_reward = 25
+        self.death_punishment = 100
 
         self.human_controlled = human_controlled
         if human_controlled:
@@ -20,6 +22,8 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
         self.collisions = [0,0,0,0,0,0,0,0]
 
+        self.gate_reward = 100
+        self.lap_reward = 1000
         self.fitness = 0
         self.time_since_reward = 0
         self.next_gate = 0
@@ -61,11 +65,11 @@ class PhysicalObject(pyglet.sprite.Sprite):
         y_bounds = self.reward_gates[self.next_gate][1]
 
         if x_bounds[0]<=self.x<=x_bounds[1] and y_bounds[0]<=self.y<=y_bounds[1]:
-            self.fitness += 1
+            self.fitness += self.gate_reward
             self.time_since_reward = 0
             if self.next_gate == len(self.reward_gates)-1:
                 self.next_gate = 0
-                self.fitness += 9
+                self.fitness += self.lap_reward
             else:
                 self.next_gate += 1
 
@@ -116,7 +120,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
         if self.is_dead():
             self.dead = True
-            self.fitness -= 100
+            self.fitness -= self.death_punishment
 
         self.update_fitness()
 
@@ -140,7 +144,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         corner_points = [pt1, pt2, pt3, pt4]
 
         for point in corner_points:
-            if self.is_point_colliding(point) or self.time_since_reward >= 40:
+            if self.is_point_colliding(point) or self.time_since_reward >= self.survival_time_without_reward:
                 return True
 
         return False
