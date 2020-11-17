@@ -28,7 +28,7 @@ meteor = pyglet.sprite.Sprite(img=meteor_img, x=400, y=400, batch=main_batch)
 label = pyglet.text.Label(text='Hello, world',
                           font_name='Times New Roman',
                           font_size=36,
-                          x=400, y=400,
+                          x=770, y=770,
                           anchor_x='center', anchor_y='center', batch=main_batch)
 
 spaceships = [spaceship_1, spaceship_2]

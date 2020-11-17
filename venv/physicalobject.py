@@ -1,11 +1,14 @@
 import pyglet
 import random
 from pyglet.window import key
+from brain import Brain
 
 class PhysicalObject(pyglet.sprite.Sprite):
 
     def __init__(self, human_controlled=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.brain = Brain()
 
         self.human_controlled = human_controlled
         if human_controlled:
@@ -83,18 +86,17 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
     def move_ai(self, dt):
         constant = self.speed * dt
+        decisions = self.brain.make_decisions(ray_points=self.collisions)
 
-        if random.randrange(0,2):
+        if decisions[0][0] < 0:
             self.x -= constant
-
-        if random.randrange(0,2):
+        elif decisions[0][0] > 0:
             self.x += constant
 
-        if random.randrange(0,2):
-            self.y += constant
-
-        if random.randrange(0,2):
+        if decisions[0][1] < 0:
             self.y -= constant
+        elif decisions[0][1] > 0:
+            self.y += constant
 
     def move(self, dt):
         if self.human_controlled:
