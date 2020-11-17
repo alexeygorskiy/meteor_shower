@@ -39,7 +39,6 @@ highest_fitness_index = -150
 second_highest_fitness = -150
 second_highest_fitness_index = -150
 
-
 def reset():
     global highest_fitness
     global highest_fitness_index
@@ -79,7 +78,7 @@ def update(dt):
             second_highest_fitness = spaceships[i].fitness
             second_highest_fitness_index = i
 
-    label.text = str(highest_fitness)
+    label.text = str(round(highest_fitness))
 
     if all_dead:
         reset()

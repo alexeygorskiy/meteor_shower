@@ -23,9 +23,10 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self.collisions = [0,0,0,0,0,0,0,0]
 
         self.gate_reward = 100
-        self.lap_reward = 1000
+        self.lap_reward = 10000
         self.fitness = 0
         self.time_since_reward = 0
+        self.alive_reward = 0.1
         self.next_gate = 0
         self.reward_gates = [
             # achieved, x bounds, y bounds
@@ -63,6 +64,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
     def update_fitness(self):
         x_bounds = self.reward_gates[self.next_gate][0]
         y_bounds = self.reward_gates[self.next_gate][1]
+        self.fitness += self.alive_reward
 
         if x_bounds[0]<=self.x<=x_bounds[1] and y_bounds[0]<=self.y<=y_bounds[1]:
             self.fitness += self.gate_reward
