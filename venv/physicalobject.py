@@ -26,7 +26,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self.lap_reward = 10000
         self.fitness = 0
         self.time_since_reward = 0
-        self.alive_reward = 0.1
+        self.alive_reward = 0.01
         self.next_gate = 0
         self.reward_gates = [
             # achieved, x bounds, y bounds
@@ -103,6 +103,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
             self.y -= constant
         elif decisions[0][1] > 0:
             self.y += constant
+
 
     def move(self, dt):
         if self.human_controlled:

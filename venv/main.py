@@ -15,9 +15,11 @@ main_batch = pyglet.graphics.Batch()
 
 spaceship_img = pyglet.resource.image("car.png")
 meteor_img = pyglet.resource.image("wall.png")
+best_fitness_img = pyglet.resource.image("car_green.png")
 
 center_img(spaceship_img)
 center_img(meteor_img)
+center_img(best_fitness_img)
 
 population_size = 100
 spaceships = []
@@ -55,6 +57,10 @@ def reset():
     highest_fitness_index = -150
     second_highest_fitness = -150
     second_highest_fitness_index = -150
+    if highest_fitness_index != -150:
+        spaceships[highest_fitness_index].image = spaceship_img
+    if second_highest_fitness_index != -150:
+        spaceships[second_highest_fitness_index].image = spaceship_img
 
 
 def update(dt):
@@ -73,10 +79,18 @@ def update(dt):
 
         if spaceships[i].fitness > highest_fitness:
             highest_fitness = spaceships[i].fitness
+            if highest_fitness_index != -150:   # change the last one to normal colour
+                spaceships[highest_fitness_index].image = spaceship_img
+
             highest_fitness_index = i
-        elif spaceships[i].fitness > second_highest_fitness:
+            spaceships[i].image = best_fitness_img    # set the best one to green
+        elif spaceships[i].fitness > second_highest_fitness and highest_fitness_index != i:
             second_highest_fitness = spaceships[i].fitness
+            if second_highest_fitness_index != -150:   # change the last one to normal colour
+                spaceships[second_highest_fitness_index].image = spaceship_img
+
             second_highest_fitness_index = i
+            spaceships[i].image = best_fitness_img  # set the second best one to green
 
     label.text = str(round(highest_fitness))
 
