@@ -7,28 +7,33 @@ class PhysicalObject(pyglet.sprite.Sprite):
     def __init__(self, human_controlled=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.brain = Brain()
-        self.survival_time_without_reward = 25
-        self.death_punishment = 100
-
         self.human_controlled = human_controlled
         if human_controlled:
             self.key_handler = key.KeyStateHandler()
+        else:
+            self.brain = Brain()
 
-        self.dead = False
+        # properties
         self.sight = 10
         self.speed = 100
 
-        self.collisions = [0,0,0,0,0,0,0,0]
-
+        # rewards and fitness
+        self.fitness = 0
+        self.survival_time_without_reward = 25
+        self.death_punishment = 100
+        self.alive_reward = 0   # added everytime update is called as long as self.dead is False
         self.gate_reward = 100
         self.lap_reward = 10000
-        self.fitness = 0
+
+        # state
+        self.collisions = [0,0,0,0,0,0,0,0]
         self.time_since_reward = 0
-        self.alive_reward = 0.01
-        self.next_gate = 0
+        self.dead = False
+
+        # reward gates
+        self.next_gate = 0  # index to keep track of the next reward gate (prevents skipping of reward gates)
         self.reward_gates = [
-            # achieved, x bounds, y bounds
+            # [(x bounds), (y bounds)]
             [(0,100), (100,110)],
             [(0,100), (200,210)],
             [(0,100), (400,410)],
@@ -106,6 +111,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         constant = self.speed * dt
         decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
 
+        # if zero, don't move on that axis
         if decisions[0][0] < 0:
             self.x -= constant
         elif decisions[0][0] > 0:
@@ -129,7 +135,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
         self.time_since_reward += 0.1
 
-        self.update_raypoints()
+        self.update_raypoint_collisions()
 
         self.move(dt)
 
@@ -139,6 +145,10 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
         self.update_fitness()
 
+    """
+        returns true if the point is overlapping with the inner wall or the game window
+        (this is hardcoded for the current map and window size)
+    """
     def is_point_colliding(self, point):
         if ( (100<=point[0]<=700 and 100<=point[1]<=700) or # inner wall
             (point[0]<=0) or    # left wall
@@ -150,6 +160,10 @@ class PhysicalObject(pyglet.sprite.Sprite):
         else:
             return False
 
+    """
+        returns true if one of the corners are colliding or if self hasn't received
+        a reward in a long time (self.survival_time_without_reward)
+    """
     def is_dead(self):
         pt1 = (self.x-(self.width/2), self.y+(self.height)/2)
         pt2 = (pt1[0]+self.width, pt1[1])
@@ -164,7 +178,12 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
         return False
 
-    def update_raypoints(self):
+    """
+        updates self.collisions array based on raypoint collision
+        1: collision detected 
+        0: collision not detected
+    """
+    def update_raypoint_collisions(self):
         hw = (self.width/2)
         hh = (self.height/2)
 
