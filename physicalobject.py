@@ -1,5 +1,4 @@
 import pyglet
-import random
 from pyglet.window import key
 from brain import Brain
 
@@ -105,7 +104,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
     """
     def move_ai(self, dt):
         constant = self.speed * dt
-        decisions = self.brain.make_decisions(=self.collisions)
+        decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
 
         if decisions[0][0] < 0:
             self.x -= constant

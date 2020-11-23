@@ -1,7 +1,5 @@
 # Default ignored files
-/.idea
-/venv/Lib
-/venv/Scripts
-/venv/Include
-/venv/__pycache__
-/venv/pyvenv.cfg
+/.idea/
+/venv/
+/__pycache__/
+

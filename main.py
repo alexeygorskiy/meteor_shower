@@ -1,13 +1,12 @@
 import pyglet
 import physicalobject
-from pyglet import shapes
 
 def center_img(img):
     """Sets an image's anchor point to its center"""
     img.anchor_x = img.width // 2
     img.anchor_y = img.height // 2
 
-pyglet.resource.path = ['../resources']
+pyglet.resource.path = ['C:/Users/alexe/Documents/GitHub/car_genetic_algorithm/resources']
 pyglet.resource.reindex()
 
 game_window = pyglet.window.Window(800, 800, caption="Meteor Shower", visible=False)
