@@ -61,6 +61,11 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self.y = 50
         self.collisions = [0, 0, 0, 0, 0, 0, 0, 0]
 
+    """
+        check if self is within the bounds of a reward gate and if so add
+        the corresponding reward. when a lap is finished resets the next_gate index.
+        also adds the alive_reward everytime the method is called.
+    """
     def update_fitness(self):
         x_bounds = self.reward_gates[self.next_gate][0]
         y_bounds = self.reward_gates[self.next_gate][1]
@@ -69,12 +74,17 @@ class PhysicalObject(pyglet.sprite.Sprite):
         if x_bounds[0]<=self.x<=x_bounds[1] and y_bounds[0]<=self.y<=y_bounds[1]:
             self.fitness += self.gate_reward
             self.time_since_reward = 0
+
+            # if lap complete reset next_gate index
             if self.next_gate == len(self.reward_gates)-1:
                 self.next_gate = 0
                 self.fitness += self.lap_reward
             else:
                 self.next_gate += 1
 
+    """
+        method for moving self using the keyboard keys
+    """
     def move_human(self, dt):
         constant = self.speed * dt
 
@@ -90,9 +100,12 @@ class PhysicalObject(pyglet.sprite.Sprite):
         if self.key_handler[key.DOWN]:
             self.y -= constant
 
+    """
+        method for moving self using its neural net
+    """
     def move_ai(self, dt):
         constant = self.speed * dt
-        decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
+        decisions = self.brain.make_decisions(=self.collisions)
 
         if decisions[0][0] < 0:
             self.x -= constant
