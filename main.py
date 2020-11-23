@@ -18,29 +18,30 @@ center_img(best_fitness_img)
 
 
 game_window = pyglet.window.Window(800, 800, caption="Meteor Shower", visible=False)
+game_window.set_location(1100,150)
 main_batch = pyglet.graphics.Batch()
+text_batch = pyglet.graphics.Batch()
 
 generation = 0
 population_size = 100
-spaceships = []
 # generates a population of PhysicalObjects equal to population_size
-for i in range(0, population_size):
-    spaceships.append(physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch))
+spaceships = [physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch) for i in range(population_size)]
 
-# TODO: only draw the walls once as their position won't change
 meteor = pyglet.sprite.Sprite(img=meteor_img, x=400, y=400, batch=main_batch)
-label = pyglet.text.Label(text='Hello, world',
-                          font_name='Times New Roman',
-                          font_size=36,
-                          x=770, y=770,
-                          anchor_x='center', anchor_y='center', batch=main_batch)
+
+
+label1 = pyglet.text.Label(x=400, y=400, batch=text_batch)
+label2 = pyglet.text.Label(x=400, y=380, batch=text_batch)
+label3 = pyglet.text.Label(x=400, y=360, batch=text_batch)
 
 
 
+# all below variables have to be reset at the start of a new generation
 highest_fitness = -150
 highest_fitness_index = -150
 second_highest_fitness = -150
 second_highest_fitness_index = -150
+
 
 """
     when everyone is dead, "evolves" the population and resets the simulation
@@ -77,6 +78,8 @@ def update(dt):
     global highest_fitness_index
     global second_highest_fitness
     global second_highest_fitness_index
+    global alive_individuals
+    alive_individuals = 0
 
     all_dead = True
 
@@ -85,6 +88,7 @@ def update(dt):
 
         if not spaceships[i].dead:
             all_dead = False
+            alive_individuals+=1
 
         if spaceships[i].fitness > highest_fitness:
             highest_fitness = spaceships[i].fitness
@@ -102,18 +106,29 @@ def update(dt):
             spaceships[i].image = best_fitness_img  # set the second best one to green
     # finished looping through all the individuals
 
-    label.text = str(round(highest_fitness))
+    label1.text = "Best Fitness This Generation: " + str(round(highest_fitness))
+    label2.text = "Current Generation: " + str(generation)
+    label3.text = "Alive Individuals: " + str(alive_individuals) + "/" + str(population_size)
 
     if all_dead:
         reset()
 
 
+fps_display = pyglet.window.FPSDisplay(game_window)
+
 @game_window.event
 def on_draw():
     game_window.clear()
     main_batch.draw()
+    text_batch.draw()
+    fps_display.draw()
+
 
 game_window.set_visible()
 pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
+
+
+# TODO: have more parents for better genetic variation (look at how the car algorithm is implemented)
+# TODO: research which evolutionary algorithm you should be using (eg. change individual weights or whole layers?)
 
