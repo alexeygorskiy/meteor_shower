@@ -6,7 +6,6 @@ from random import randint, uniform
 class Brain:
     def __init__(self):
         self.mutation_rate = 15
-        self.decision_multiplier = 10
         self.model = keras.Sequential(
             [
                 layers.Dense(units=8, activation="tanh", bias_initializer="glorot_uniform"),
@@ -15,12 +14,22 @@ class Brain:
             ]
         )
 
-    def make_decisions(self, ray_points):
-        ray_points = np.reshape(ray_points, newshape=(1, 8))
-        decisions = np.round(self.model(ray_points, training=False) * self.decision_multiplier)
+    """
+        given an array of ray_point_collisions (1x8), which indicates which points are colliding,
+        returns a decisions array (1x2) describing in what direction to move
+        decisions[0]: x
+        decisions[1]: y
+    """
+    def make_decisions(self, ray_point_collisions):
+        ray_point_collisions = np.reshape(ray_point_collisions, newshape=(1, 8))
+        decisions = np.round(self.model(ray_point_collisions, training=False))
         return decisions
 
 
+    """
+        swaps every weight layer of self for one of parents' weight layers in the same position.  
+        also has a chance to mutate the whole weight layer by adding a uniform distribution to it 
+    """
     def evolve(self, parent1, parent2):
         parent1_weights = parent1.brain.model.get_weights()
         parent2_weights = parent2.brain.model.get_weights()
@@ -32,8 +41,13 @@ class Brain:
                 parent1_weights[layer] += uniform(-0.5, 0.5)
 
         self.model.set_weights(parent1_weights)
-    """
 
+
+    """
+        swaps every individual weight in every weight layer of self for one of parents' weights in the 
+        same position. also has a chance to mutate the individual weight by adding a uniform distribution to it 
+    """
+    """
     def evolve(self, parent1, parent2):
         parent1_weights = parent1.brain.model.get_weights()
         parent2_weights = parent2.brain.model.get_weights()
@@ -52,6 +66,8 @@ class Brain:
                         parent1_weights[layer][row] = parent2_weights[layer][row]
                     if randint(0, 100) < self.mutation_rate:  # mutation
                         parent1_weights[layer][row] += uniform(-0.5, 0.5)
+        # bias layers only have rows so a different loop is used for
+        # every odd layer, which is a bias layer to only loop through the rows
 
         self.model.set_weights(parent1_weights)
-"""
+    """
