@@ -29,9 +29,28 @@ class Brain:
         return decisions
 
 
+
+    """
+        parent_weights: array of weights
+    """
+
+    def evolve(self, parent_weights):
+        new_weights = self.model.get_weights()
+
+        for layer in range(len(parent_weights[0])):  # loops through every weight layer
+            # crossover
+            parent = randint(0, len(parent_weights)-1)
+            new_weights[layer] = parent_weights[parent][layer]
+
+            if randint(0, 100) < self.mutation_rate:  # mutation
+                new_weights[layer] += uniform(-0.5, 0.5)
+
+        self.model.set_weights(new_weights)
+
     """
         swaps every weight layer of self for one of parents' weight layers in the same position.  
         also has a chance to mutate the whole weight layer by adding a uniform distribution to it 
+    """
     """
     def evolve(self, parent1, parent2):
         parent1_weights = parent1.brain.model.get_weights()
@@ -44,7 +63,7 @@ class Brain:
                 parent1_weights[layer] += uniform(-0.5, 0.5)
 
         self.model.set_weights(parent1_weights)
-
+    """
 
     """
         swaps every individual weight in every weight layer of self for one of parents' weights in the 

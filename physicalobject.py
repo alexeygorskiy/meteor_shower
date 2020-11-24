@@ -66,7 +66,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self.x = 50
         self.y = 50
         self.collisions = [0, 0, 0, 0, 0, 0, 0, 0]
-        self.opacity = 255
+        self.visible = True
 
     """
         check if self is within the bounds of a reward gate and if so add
@@ -155,7 +155,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         if self.is_dead():
             self.dead = True
             self.fitness -= self.death_punishment
-            self.opacity = 0
+            self.visible = False
 
         self.update_fitness()
 
