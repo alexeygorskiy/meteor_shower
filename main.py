@@ -22,8 +22,9 @@ game_window.set_location(1100,150)
 main_batch = pyglet.graphics.Batch()
 text_batch = pyglet.graphics.Batch()
 
-generation = 0
+generation = -1
 population_size = 100
+number_of_parents = 10
 # generates a population of PhysicalObjects equal to population_size
 spaceships = [physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch) for i in range(population_size)]
 
@@ -33,8 +34,7 @@ meteor = pyglet.sprite.Sprite(img=meteor_img, x=400, y=400, batch=main_batch)
 label1 = pyglet.text.Label(x=400, y=400, batch=text_batch)
 label2 = pyglet.text.Label(x=400, y=380, batch=text_batch)
 label3 = pyglet.text.Label(x=400, y=360, batch=text_batch)
-
-
+label4 = pyglet.text.Label(x=400, y=340, batch=text_batch)
 
 # all below variables have to be reset at the start of a new generation
 highest_fitness = -150
@@ -42,6 +42,22 @@ highest_fitness_index = -150
 second_highest_fitness = -150
 second_highest_fitness_index = -150
 
+
+"""
+    returns the best individuals from the population equal to the number_of_parents variable 
+"""
+def find_best_parents():
+    spaceships_dict = {}
+
+    for i in range(len(spaceships)):
+        spaceships_dict[i] = spaceships[i].fitness
+    spaceships_dict = sorted(spaceships_dict.items(), key=lambda x: x[1], reverse=True)
+
+    best_indices = []
+    for key in spaceships_dict[:number_of_parents]:
+        best_indices.append(key[0])
+
+    return best_indices
 
 """
     when everyone is dead, "evolves" the population and resets the simulation
@@ -53,9 +69,11 @@ def reset():
     global second_highest_fitness_index
     global generation
 
+
     for i in range(0, len(spaceships)):
-        if i!=highest_fitness_index and i!=second_highest_fitness_index and generation!=0:  # generation 0 is a bit buggy, so wait till next one to start evolving
+        if i!=highest_fitness_index and i!=second_highest_fitness_index and generation>=1:  # the first two generations sometimes don't count fitness, so wait 2 generations to start evolving
             spaceships[i].brain.evolve(spaceships[highest_fitness_index], spaceships[second_highest_fitness_index])
+            find_best_parents()
         spaceships[i].reset()
 
     # reset the images of the best individuals back to the normal image
@@ -79,9 +97,10 @@ def update(dt):
     global second_highest_fitness
     global second_highest_fitness_index
     global alive_individuals
-    alive_individuals = 0
 
+    alive_individuals = 0
     all_dead = True
+    shortest_time_without_reward = 99
 
     for i in range(0, len(spaceships)):
         spaceships[i].update(dt=dt)
@@ -89,6 +108,8 @@ def update(dt):
         if not spaceships[i].dead:
             all_dead = False
             alive_individuals+=1
+            if spaceships[i].time_since_reward<shortest_time_without_reward:
+                shortest_time_without_reward = spaceships[i].time_since_reward  # keep track of the one that has longest time to live
 
         if spaceships[i].fitness > highest_fitness:
             highest_fitness = spaceships[i].fitness
@@ -109,6 +130,7 @@ def update(dt):
     label1.text = "Best Fitness This Generation: " + str(round(highest_fitness))
     label2.text = "Current Generation: " + str(generation)
     label3.text = "Alive Individuals: " + str(alive_individuals) + "/" + str(population_size)
+    label4.text = "Shortest Time Without Reward: " + str(round(shortest_time_without_reward))
 
     if all_dead:
         reset()
@@ -127,6 +149,7 @@ def on_draw():
 game_window.set_visible()
 pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
+
 
 
 # TODO: have more parents for better genetic variation (look at how the car algorithm is implemented)
