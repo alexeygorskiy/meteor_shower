@@ -22,7 +22,7 @@ game_window.set_location(1100,150)
 main_batch = pyglet.graphics.Batch()
 text_batch = pyglet.graphics.Batch()
 
-generation = -1
+generation = 0
 population_size = 100
 number_of_parents = 10
 # generates a population of PhysicalObjects equal to population_size
@@ -71,7 +71,7 @@ def reset():
 
 
     for i in range(0, len(spaceships)):
-        if i!=highest_fitness_index and i!=second_highest_fitness_index and generation>=1:  # the first two generations sometimes don't count fitness, so wait 2 generations to start evolving
+        if i!=highest_fitness_index and i!=second_highest_fitness_index:
             spaceships[i].brain.evolve(spaceships[highest_fitness_index], spaceships[second_highest_fitness_index])
             find_best_parents()
         spaceships[i].reset()
@@ -151,7 +151,9 @@ pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
 
 
-
+# TODO: save the last generation in case the evolution reduces the fitness so you can go back to the previous one (avg fitness vs. max fitness)
+# TODO: if nobody gets any rewards in the first generation, just get a new population and train that
+# TODO: don't use those that have a fitness of -100 (no rewards) as parents? (maybe?)
 # TODO: have more parents for better genetic variation (look at how the car algorithm is implemented)
 # TODO: research which evolutionary algorithm you should be using (eg. change individual weights or whole layers?)
 

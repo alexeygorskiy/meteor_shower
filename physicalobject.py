@@ -15,18 +15,20 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
         # properties
         self.sight = 10
-        self.speed = 100
+        self.speed = 200
 
         # rewards and fitness
         self.fitness = 0
-        self.survival_time_without_reward = 25
+        self.survival_time_without_reward = 15
         self.death_punishment = 100
         self.alive_reward = 0   # added everytime update is called as long as self.dead is False
         self.gate_reward = 100
         self.lap_reward = 10000
 
         # state
-        self.collisions = [0,0,0,0,0,0,0,0]
+        self.collisions = [0, 0, 0, 0, 0, 0, 0, 0]
+        self.last_collisions = self.collisions
+        self.last_decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
         self.time_since_reward = 0
         self.dead = False
 
@@ -91,7 +93,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         method for moving self using the keyboard keys
     """
     def move_human(self, dt):
-        constant = self.speed * dt
+        constant = int(self.speed * dt)
 
         if self.key_handler[key.LEFT]:
             self.x -= constant
@@ -109,20 +111,29 @@ class PhysicalObject(pyglet.sprite.Sprite):
         method for moving self using its neural net
     """
     def move_ai(self, dt):
-        constant = self.speed * dt
+        constant = int(self.speed * dt)
 
-        decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
+        # if the collision state hasn't changed, use the decision from the last update
+        if self.collisions == self.last_collisions:
+            decisions = self.last_decisions
+        else:   # if the the collision has changed, make a new decision and make that the most recent decision
+            decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
+            self.last_decisions = decisions
 
         # if zero, don't move on that axis
         if decisions[0][0] < 0:
             self.x -= constant
         elif decisions[0][0] > 0:
             self.x += constant
+        #else:
+        #    self.x += int(randint(-1,1) * constant)
 
         if decisions[0][1] < 0:
             self.y -= constant
         elif decisions[0][1] > 0:
             self.y += constant
+        #else:
+        #    self.y += int(randint(-1, 1) * constant)
 
 
     def move(self, dt):
@@ -135,7 +146,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         if self.dead:
             return
 
-        self.time_since_reward += 0.1
+        self.time_since_reward += dt*3
 
         self.update_raypoint_collisions()
 
@@ -144,7 +155,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         if self.is_dead():
             self.dead = True
             self.fitness -= self.death_punishment
-            self.opacity = 150
+            self.opacity = 0
 
         self.update_fitness()
 
@@ -209,6 +220,8 @@ class PhysicalObject(pyglet.sprite.Sprite):
         for point in ray_points:
             colliding.append(1 if self.is_point_colliding(point) else 0)
 
-        self.collisions = colliding
+        # keep track of the last collision state to compare whether new decisions need to be made
+        self.last_collisions = self.collisions
+        self.collisions = colliding # new collision state
 
 
