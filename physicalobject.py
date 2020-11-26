@@ -66,6 +66,8 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self.x = 50
         self.y = 50
         self.collisions = [0, 0, 0, 0, 0, 0, 0, 0]
+        self.last_collisions = self.collisions
+        self.last_decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
         self.visible = True
 
     """
@@ -152,12 +154,18 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
         self.move(dt)
 
+        # if they die, they get punished
         if self.is_dead():
             self.dead = True
             self.fitness -= self.death_punishment
             self.visible = False
+        elif self.time_since_reward >= self.survival_time_without_reward:
+            # if they haven't received any rewards in a long time they still die, but without punishment
+            self.dead = True
+            self.visible = False
 
         self.update_fitness()
+
 
     """
         returns true if the point is overlapping with the inner wall or the game window
@@ -187,7 +195,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         corner_points = [pt1, pt2, pt3, pt4]
 
         for point in corner_points:
-            if self.is_point_colliding(point) or self.time_since_reward >= self.survival_time_without_reward:
+            if self.is_point_colliding(point):
                 return True
 
         return False
