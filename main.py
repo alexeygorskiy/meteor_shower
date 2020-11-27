@@ -207,8 +207,3 @@ pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
 
 
-# TODO: speed up the time by not calling update every few frames, but instead let it go as fast as possible, while loop with calls to update
-# TODO: fix FPS after above change and use dt to still make their movements smooth (maybe?)
-# TODO: research which evolutionary algorithm you should be using (eg. change individual weights or whole layers?)
-
-
