@@ -20,8 +20,15 @@ class PhysicalObject(pyglet.sprite.Sprite):
         # rewards and fitness
         self.fitness = 0
         self.survival_time_without_reward = 15
-        self.death_punishment = 100
-        self.alive_reward = 0   # added everytime update is called as long as self.dead is False
+
+        self.death_punishment = 50
+        # smaller than the reward of a gate so that those that get a reward and die
+        # are considered better than those that choose to not get the reward and not die
+
+        # added every time update is called as long as self.dead is False
+        # doesn't seem to work that great from empirical observations, so keep it at 0
+        self.alive_reward = 0
+
         self.gate_reward = 100
         self.lap_reward = 10000
 
@@ -57,7 +64,6 @@ class PhysicalObject(pyglet.sprite.Sprite):
             [(90, 100), (0, 100)],
         ]
 
-
     def reset(self):
         self.dead = False
         self.time_since_reward = 0
@@ -73,14 +79,15 @@ class PhysicalObject(pyglet.sprite.Sprite):
     """
         check if self is within the bounds of a reward gate and if so add
         the corresponding reward. when a lap is finished resets the next_gate index.
-        also adds the alive_reward everytime the method is called.
+        also adds the alive_reward every time the method is called and reset self.time_since_reward
+        when a gate is reached
     """
     def update_fitness(self):
         x_bounds = self.reward_gates[self.next_gate][0]
         y_bounds = self.reward_gates[self.next_gate][1]
         self.fitness += self.alive_reward
 
-        if x_bounds[0]<=self.x<=x_bounds[1] and y_bounds[0]<=self.y<=y_bounds[1]:
+        if x_bounds[0] <= self.x <= x_bounds[1] and y_bounds[0] <= self.y <= y_bounds[1]:
             self.fitness += self.gate_reward
             self.time_since_reward = 0
 
@@ -115,10 +122,11 @@ class PhysicalObject(pyglet.sprite.Sprite):
     def move_ai(self, dt):
         constant = int(self.speed * dt)
 
-        # if the collision state hasn't changed, use the decision from the last update
+        # if the collision state hasn't changed, use the decisions from the last update.
+        # self.collisions is updated by update_raypoint_collisions(), which is called before this method
         if self.collisions == self.last_collisions:
             decisions = self.last_decisions
-        else:   # if the the collision has changed, make a new decision and make that the most recent decision
+        else:   # if the the collision state has changed, make new decisions and make that the most recent decision
             decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
             self.last_decisions = decisions
 
@@ -127,15 +135,11 @@ class PhysicalObject(pyglet.sprite.Sprite):
             self.x -= constant
         elif decisions[0][0] > 0:
             self.x += constant
-        #else:
-        #    self.x += int(randint(-1,1) * constant)
 
         if decisions[0][1] < 0:
             self.y -= constant
         elif decisions[0][1] > 0:
             self.y += constant
-        #else:
-        #    self.y += int(randint(-1, 1) * constant)
 
 
     def move(self, dt):
@@ -154,37 +158,41 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
         self.move(dt)
 
-        # if they die, they get punished
+        # if they die by hitting a wall, they get punished
         if self.is_dead():
             self.dead = True
             self.fitness -= self.death_punishment
             self.visible = False
+
+        # if they haven't received any rewards in a long time they still die, but without punishment
         elif self.time_since_reward >= self.survival_time_without_reward:
-            # if they haven't received any rewards in a long time they still die, but without punishment
             self.dead = True
             self.visible = False
 
+        # called one last time if they have died so that if they managed to
+        # reach a reward as they died they still get the reward
         self.update_fitness()
 
 
     """
         returns true if the point is overlapping with the inner wall or the game window
         (this is hardcoded for the current map and window size)
+        point[0]: x
+        point[1]: y
     """
     def is_point_colliding(self, point):
-        if ( (100<=point[0]<=700 and 100<=point[1]<=700) or # inner wall
-            (point[0]<=0) or    # left wall
-            (800<=point[0]) or  # right wall
-            (point[1]<=0) or       # bottom wall
-            (800<=point[1])   # top wall
+        if ( (100 <= point[0] <= 700 and 100 <= point[1] <= 700) or # inner wall
+            (point[0] <= 0) or    # left wall
+            (800 <= point[0]) or  # right wall
+            (point[1] <= 0) or       # bottom wall
+            (800 <= point[1])   # top wall
         ):
             return True
         else:
             return False
 
     """
-        returns true if one of the corners are colliding or if self hasn't received
-        a reward in a long time (self.survival_time_without_reward)
+        returns true if one of the corners of self are colliding
     """
     def is_dead(self):
         pt1 = (self.x-(self.width/2), self.y+(self.height)/2)
@@ -229,7 +237,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
             colliding.append(1 if self.is_point_colliding(point) else 0)
 
         # keep track of the last collision state to compare whether new decisions need to be made
-        self.last_collisions = self.collisions
-        self.collisions = colliding # new collision state
+        self.last_collisions = self.collisions  # save the last collision state
+        self.collisions = colliding     # update the current collision state
 
 

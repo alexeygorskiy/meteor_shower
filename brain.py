@@ -11,48 +11,27 @@ class Brain:
                 layers.Dense(units=8, activation="tanh", bias_initializer="glorot_uniform"),
                 layers.Dense(units=4, activation="tanh", bias_initializer="glorot_uniform"),
                 layers.Dense(units=2, activation="tanh", bias_initializer="glorot_uniform"),
-                #layers.Dense(units=8, activation="tanh"),
-                #layers.Dense(units=4, activation="tanh"),
-                #layers.Dense(units=2, activation="tanh"),
             ]
         )
+        # if the bias_initializer argument is not passed, bias layers will be initialised as zeros
+        # and the individual will not move anywhere in the beginning, which slows down learning
 
     """
         given an array of ray_point_collisions (1x8), which indicates which points are colliding,
         returns a decisions array (1x2) describing in what direction to move
-        decisions[0]: x
-        decisions[1]: y
+        decisions[0]: x, tanh: [-1,1] where -1 is movement in the negative direction, 0 no movement and 1 in positive
+        decisions[1]: y, tanh: [-1,1] where -1 is movement in the negative direction, 0 no movement and 1 in positive
     """
     def make_decisions(self, ray_point_collisions):
         ray_point_collisions = np.reshape(ray_point_collisions, newshape=(1, 8))
         decisions = np.round(self.model(ray_point_collisions, training=False))
         return decisions
 
-
-
     """
         parent_weights: array of weights
-        swaps every weight layer of self for one of parents' weight layers in the same position.  
-        also has a chance to mutate the whole weight layer by adding a uniform distribution to it 
-    """
-    """
-    def evolve(self, parent_weights):
-        new_weights = self.model.get_weights()
-
-        for layer in range(len(parent_weights[0])):  # loops through every weight layer
-            # crossover
-            parent = randint(0, len(parent_weights)-1)
-            new_weights[layer] = parent_weights[parent][layer]
-
-            if randint(0, 100) < self.mutation_rate:  # mutation
-                new_weights[layer] += uniform(-0.5, 0.5)
-
-        self.model.set_weights(new_weights)
-    """
-
-    """
         swaps every individual weight in every weight layer of self for one of parents' weights in the 
         same position. also has a chance to mutate the individual weight by adding a uniform distribution to it 
+        with the chance of self.mutation_rate
     """
     def evolve(self, parent_weights):
         new_weights = self.model.get_weights()
@@ -77,7 +56,7 @@ class Brain:
                     # mutation
                     if randint(0, 100) < self.mutation_rate:
                         new_weights[layer][row] += uniform(-0.5, 0.5)
-        # bias layers only have rows so a different loop is used for
-        # every odd layer, which is a bias layer to only loop through the rows
+        # bias layers only have rows so a different loop is used for every odd layer, which is a bias layer,
+        # to only loop through the rows
 
         self.model.set_weights(new_weights)
