@@ -8,8 +8,6 @@ class Brain:
         self.mutation_rate = 15
         self.model = keras.Sequential(
             [
-                layers.Dense(units=8, activation="tanh", bias_initializer="glorot_uniform"),
-                layers.Dense(units=4, activation="tanh", bias_initializer="glorot_uniform"),
                 layers.Dense(units=2, activation="tanh", bias_initializer="glorot_uniform"),
             ]
         )
