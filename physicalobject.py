@@ -7,11 +7,19 @@ class PhysicalObject(pyglet.sprite.Sprite):
     def __init__(self, human_controlled=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        """
+            --------------   NOTE:   --------------
+            EVERY TIME YOU ADD A NEW VARIABLE HERE
+            MAKE SURE TO RESET IT IN reset() IF
+            APPLICABLE!!!
+            ---------------------------------------
+        """
+
         self.human_controlled = human_controlled
         if human_controlled:
             self.key_handler = key.KeyStateHandler()
-        else:
-            self.brain = Brain()
+
+        self.brain = Brain()
 
         # properties
         self.sight = 10
@@ -33,11 +41,15 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self.lap_reward = 10000
 
         # state
+        # always zeros, so make sure to set (self.x, self.y) to somewhere where there is no initial collisions
         self.collisions = [0, 0, 0, 0, 0, 0, 0, 0]
+
         self.last_collisions = self.collisions
         self.last_decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
         self.time_since_reward = 0
         self.dead = False
+        self.ray_points = self.get_raypoints()
+        self.corner_points = self.get_corner_points()
 
         # reward gates
         self.next_gate = 0  # index to keep track of the next reward gate (prevents skipping of reward gates)
@@ -75,6 +87,8 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self.last_collisions = self.collisions
         self.last_decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
         self.visible = True
+        self.ray_points = self.get_raypoints()
+        self.corner_points = self.get_corner_points()
 
     """
         check if self is within the bounds of a reward gate and if so add
@@ -105,23 +119,32 @@ class PhysicalObject(pyglet.sprite.Sprite):
         constant = int(self.speed * dt)
 
         if self.key_handler[key.LEFT]:
-            self.x -= constant
-
-        if self.key_handler[key.RIGHT]:
-            self.x += constant
+            dx = constant * -1
+        elif self.key_handler[key.RIGHT]:
+            dx = constant
+        else:
+            dx = 0
 
         if self.key_handler[key.UP]:
-            self.y += constant
+            dy = constant
+        elif self.key_handler[key.DOWN]:
+            dy = constant * -1
+        else:
+            dy = 0
 
-        if self.key_handler[key.DOWN]:
-            self.y -= constant
+        self.x += dx
+        self.y += dy
+
+        for point in self.corner_points:
+            point[0] += dx
+            point[1] += dy
+
+
 
     """
         method for moving self using its neural net
     """
     def move_ai(self, dt):
-        constant = int(self.speed * dt)
-
         # if the collision state hasn't changed, use the decisions from the last update.
         # self.collisions is updated by update_raypoint_collisions(), which is called before this method
         if self.collisions == self.last_collisions:
@@ -130,16 +153,24 @@ class PhysicalObject(pyglet.sprite.Sprite):
             decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
             self.last_decisions = decisions
 
-        # if zero, don't move on that axis
-        if decisions[0][0] < 0:
-            self.x -= constant
-        elif decisions[0][0] > 0:
-            self.x += constant
+        # decisions: {-1,0,1}
+        # decisions[0][0]: x
+        # decisions[0][1]: y
+        constant = int(self.speed * dt)
+        dx = constant*decisions[0][0]
+        dy = constant*decisions[0][1]
 
-        if decisions[0][1] < 0:
-            self.y -= constant
-        elif decisions[0][1] > 0:
-            self.y += constant
+        self.x += dx
+        self.y += dy
+
+        for point in self.ray_points:
+            point[0] += dx
+            point[1] += dy
+
+        for point in self.corner_points:
+            point[0] += dx
+            point[1] += dy
+
 
 
     def move(self, dt):
@@ -192,21 +223,47 @@ class PhysicalObject(pyglet.sprite.Sprite):
             return False
 
     """
+        :returns an array of all the corners points ath the current coordinates (self.x, self.y)
+    """
+    def get_corner_points(self):
+        pt1 = [self.x-(self.width/2), self.y+(self.height)/2]
+        pt2 = [pt1[0]+self.width, pt1[1]]
+        pt3 = [pt2[0], pt2[1]-self.height]
+        pt4 = [pt3[0]-self.width, pt3[1]]
+
+        return [pt1, pt2, pt3, pt4]
+
+    """
         returns true if one of the corners of self are colliding
     """
     def is_dead(self):
-        pt1 = (self.x-(self.width/2), self.y+(self.height)/2)
-        pt2 = (pt1[0]+self.width, pt1[1])
-        pt3 = (pt2[0], pt2[1]-self.height)
-        pt4 = (pt3[0]-self.width, pt3[1])
-
-        corner_points = [pt1, pt2, pt3, pt4]
-
-        for point in corner_points:
+        for point in self.corner_points:
             if self.is_point_colliding(point):
                 return True
 
         return False
+
+
+    """
+        :returns an array of all the raypoints at the current coordinates (self.x, self.y)
+    """
+    def get_raypoints(self):
+        hw = (self.width/2)
+        hh = (self.height/2)
+
+        pt1 = [self.x-hw-self.sight, self.y]
+        pt2 = [pt1[0], pt1[1]+hh+self.sight]
+
+        pt3 = [self.x, self.y+hh+self.sight]
+        pt4 = [pt3[0]+hw+self.sight, pt3[1]]
+
+        pt5 = [self.x+hw+self.sight, self.y]
+        pt6 = [pt5[0], pt5[1]-hh-self.sight]
+
+        pt7 = [self.x, self.y - hh - self.sight]
+        pt8 = [pt7[0] - hw - self.sight, pt7[1]]
+
+        return [pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8]
 
     """
         updates self.collisions array based on raypoint collision
@@ -214,26 +271,8 @@ class PhysicalObject(pyglet.sprite.Sprite):
         0: collision not detected
     """
     def update_raypoint_collisions(self):
-        hw = (self.width/2)
-        hh = (self.height/2)
-
-        pt1 = (self.x-hw-self.sight, self.y)
-        pt2 = (pt1[0], pt1[1]+hh+self.sight)
-
-        pt3 = (self.x, self.y+hh+self.sight)
-        pt4 = (pt3[0]+hw+self.sight, pt3[1])
-
-        pt5 = (self.x+hw+self.sight, self.y)
-        pt6 = (pt5[0], pt5[1]-hh-self.sight)
-
-        pt7 = (self.x, self.y - hh - self.sight)
-        pt8 = (pt7[0] - hw - self.sight, pt7[1])
-
-        ray_points = [pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8]
-
         colliding = []
-
-        for point in ray_points:
+        for point in self.ray_points:
             colliding.append(1 if self.is_point_colliding(point) else 0)
 
         # keep track of the last collision state to compare whether new decisions need to be made

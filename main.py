@@ -29,6 +29,7 @@ restarts = 0
 population_rollbacks = 0
 # generates a population of PhysicalObjects equal to population_size
 spaceships = [physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch) for i in range(population_size)]
+# HUMAN_CONTROL: spaceships.append(physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch, human_controlled=True))
 
 # these two variables are in reality best_generation_spaceships and best_fitness_overall, but these fit as well
 last_generation_spaceships = spaceships
@@ -200,12 +201,12 @@ def on_draw():
     fps_display.draw()
 
 
+# HUMAN_CONTROL: game_window.push_handlers(spaceships[-1].key_handler)
 game_window.set_visible()
 pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
 
 
-# TODO: don't calculate the corner points and ray points everytime, just add the same value to them
 # TODO: speed up the time by not calling update every few frames, but instead let it go as fast as possible, while loop with calls to update
 # TODO: fix FPS after above change and use dt to still make their movements smooth (maybe?)
 # TODO: research which evolutionary algorithm you should be using (eg. change individual weights or whole layers?)
