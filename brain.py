@@ -8,7 +8,7 @@ class Brain:
         self.mutation_rate = 15
         self.model = keras.Sequential(
             [
-                layers.Dense(units=2, activation="tanh", bias_initializer="glorot_uniform"),
+                layers.Dense(units=2, activation="tanh", bias_initializer="glorot_uniform")
             ]
         )
         # if the bias_initializer argument is not passed, bias layers will be initialised as zeros
