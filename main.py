@@ -1,5 +1,6 @@
 import pyglet
-import physicalobject
+import spaceshipobject
+import meteorobject
 
 def center_img(img):
     """Sets an image's anchor point to its center"""
@@ -10,10 +11,10 @@ def center_img(img):
 pyglet.resource.path = ['resources/']
 pyglet.resource.reindex()
 spaceship_img = pyglet.resource.image("car.png")
-meteor_img = pyglet.resource.image("wall.png")
+#meteor_img = pyglet.resource.image("wall.png")
 best_fitness_img = pyglet.resource.image("car_green.png")
 center_img(spaceship_img)
-center_img(meteor_img)
+#center_img(meteor_img)
 center_img(best_fitness_img)
 
 
@@ -23,12 +24,12 @@ main_batch = pyglet.graphics.Batch()
 text_batch = pyglet.graphics.Batch()
 
 generation = 0
-population_size = 200
-number_of_parents = 10
+population_size = 100
+number_of_parents = 5
 restarts = 0
 population_rollbacks = 0
 # generates a population of PhysicalObjects equal to population_size
-spaceships = [physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch) for i in range(population_size)]
+spaceships = [spaceshipobject.SpaceshipObject(img=spaceship_img, batch=main_batch) for i in range(population_size)]
 # HUMAN_CONTROL: spaceships.append(physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch, human_controlled=True))
 
 # these two variables are in reality best_generation_spaceships and best_fitness_overall, but these fit as well
@@ -36,7 +37,18 @@ last_generation_spaceships = spaceships
 avg_fitness_last_generation = -99999
 
 
-meteor = pyglet.sprite.Sprite(img=meteor_img, x=400, y=400, batch=main_batch)
+#meteor = pyglet.sprite.Sprite(img=meteor_img, x=400, y=400, batch=main_batch)
+#meteor.visible = False
+
+""""""
+
+num_meteors = 50
+meteors_batch = pyglet.graphics.Batch()
+meteor_img = pyglet.resource.image("meteor.png")
+center_img(meteor_img)
+meteors = [meteorobject.MeteorObject(img=meteor_img, batch=meteors_batch) for i in range(num_meteors)]
+
+""""""
 
 # labels
 number_of_labels = 8
@@ -106,7 +118,7 @@ def reset():
     # so restart the whole population
     if generation == 0 and highest_fitness < (spaceships[0].gate_reward - spaceships[0].death_punishment):
         # but it's ok to get a reward and then die
-        spaceships = [physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch) for i in range(population_size)]
+        spaceships = [spaceship.SpaceshipObject(img=spaceship_img, x=50, y=50, batch=main_batch) for i in range(population_size)]
         restarts += 1
     elif avg_fitness_this_generation <= avg_fitness_last_generation:    # last generation was better, reset to last
         spaceships = last_generation_spaceships     # last gen pre-evolution and pre-reset
@@ -148,7 +160,10 @@ def update(dt):
     alive_individuals = 0
     shortest_time_without_reward = 99
 
-    for i in range(0, len(spaceships)):
+    for meteor in meteors:
+        meteor.update(dt=dt)
+
+    """for i in range(0, len(spaceships)):
         spaceships[i].update(dt=dt)
 
         if not spaceships[i].dead:
@@ -187,7 +202,7 @@ def update(dt):
     if alive_individuals == 0:
         pyglet.clock.unschedule(update)  # unschedule until the reset is done
         reset()
-        pyglet.clock.schedule_interval(update, 1 / 60.0)
+        pyglet.clock.schedule_interval(update, 1 / 60.0)"""
 
 
 
@@ -197,6 +212,7 @@ fps_display = pyglet.window.FPSDisplay(game_window)
 def on_draw():
     game_window.clear()
     main_batch.draw()
+    meteors_batch.draw()
     text_batch.draw()   # draw the text after main_batch so it ends up on top
     fps_display.draw()
 

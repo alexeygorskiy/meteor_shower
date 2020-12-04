@@ -1,8 +1,9 @@
 import pyglet
 from pyglet.window import key
 from brain import Brain
+from random import randint
 
-class PhysicalObject(pyglet.sprite.Sprite):
+class SpaceshipObject(pyglet.sprite.Sprite):
 
     def __init__(self, human_controlled=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -14,6 +15,8 @@ class PhysicalObject(pyglet.sprite.Sprite):
             APPLICABLE!!!
             ---------------------------------------
         """
+
+        self.x, self.y = self.get_spawn_coords()
 
         self.human_controlled = human_controlled
         if human_controlled:
@@ -76,13 +79,18 @@ class PhysicalObject(pyglet.sprite.Sprite):
             [(90, 100), (0, 100)],
         ]
 
+
+    def get_spawn_coords(self):
+        return randint(250,550), randint(250,550)
+
+
+
     def reset(self):
         self.dead = False
         self.time_since_reward = 0
         self.fitness = 0
         self.next_gate = 0
-        self.x = 50
-        self.y = 50
+        self.x, self.y = self.get_spawn_coords()
         self.collisions = [0, 0, 0, 0, 0, 0, 0, 0]
         self.last_collisions = self.collisions
         self.last_decisions = self.brain.make_decisions(ray_point_collisions=self.collisions)
