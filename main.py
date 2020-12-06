@@ -87,6 +87,9 @@ def update(dt):
     highest_fitness = 0
     alive_individuals = 0
 
+
+
+    """
     for meteor in meteors:
         meteor.update(dt=dt)
 
@@ -112,6 +115,8 @@ def update(dt):
             alive_individuals += 1
             if spaceship.fitness > highest_fitness:
                 highest_fitness = spaceship.fitness
+    """
+
 
     labels[0].text = "Best Fitness This Generation: " + str(round(highest_fitness))
     labels[1].text = "Current Generation: " + str(generation)
