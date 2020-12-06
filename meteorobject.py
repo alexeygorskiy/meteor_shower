@@ -32,6 +32,11 @@ class MeteorObject(pyglet.sprite.Sprite):
         dy = 400-self.y
         sum = sqrt( (abs(dx))^2 + (abs(dy))^2 )
 
+        if sum == 0:
+            dx = randint(-400, 400)
+            dy = randint(-400, 400)
+            sum = sqrt((abs(dx)) ^ 2 + (abs(dy)) ^ 2)
+
         dx = dx * randint(1, 10) * self.speed / (sum*5)
         dy = dy * randint(1, 10) * self.speed / (sum*5)
 
@@ -40,6 +45,10 @@ class MeteorObject(pyglet.sprite.Sprite):
     def move(self):
         self.x += self.dx/100
         self.y += self.dy/100
+
+        for pt in self.corner_points:
+            pt[0] += self.dx/100
+            pt[1] += self.dy/100
 
 
     def is_outside_map(self):
@@ -51,18 +60,12 @@ class MeteorObject(pyglet.sprite.Sprite):
         if self.is_outside_map():
             self.reset()
 
-
-
-    """
-        :returns an array of all the corners points ath the current coordinates (self.x, self.y)
-    """
     def get_corner_points(self):
-        pt1 = [self.x-(self.width/2), self.y+(self.height)/2]
-        pt2 = [pt1[0]+self.width, pt1[1]]
-        pt3 = [pt2[0], pt2[1]-self.height]
-        pt4 = [pt3[0]-self.width, pt3[1]]
+        bottom_left = [self.x-(self.width/2), self.y-(self.height)/2]
+        top_right = [self.x+(self.width/2), self.y+(self.height)/2]
 
-        return [pt1, pt2, pt3, pt4]
+        return [bottom_left, top_right]
+
 
     def reset(self):
         self.x, self.y = self.get_spawn_coords()
