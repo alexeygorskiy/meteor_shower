@@ -19,7 +19,9 @@ class SpaceshipObject(pyglet.sprite.Sprite):
             self.key_handler = key.KeyStateHandler()
         self.brain = Brain()
 
-        self.sight = 8
+        # with the current width and height having more sight than 7 will
+        # allow certain meteors to sneak through its line of sight
+        self.sight = 7
         self.speed = 1
 
         # added every time update is called as long as self.dead is False

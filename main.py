@@ -150,7 +150,6 @@ def update(dt):
         reset()
         pyglet.clock.schedule_interval(update, 1 / 60.0)
 
-
 @game_window.event
 def on_draw():
     game_window.clear()
@@ -165,8 +164,7 @@ pyglet.app.run()
 
 # TODO: take diversity into account
 # TODO: change their speeds. the spaceships HAVE TO BE FASTER (always)
-# TODO: read through the quadtree page and see about the optimisation
 # TODO: velocities are calculated based on the position of a random alive spaceship hehe
 # TODO: this will give a better spread and make sure they all die if they don't learn :D
-# TODO: look into the problem of them not not detecting certain things
+# TODO: or make certain direction vectors that they can choose at random
 

@@ -1,6 +1,7 @@
 import spaceshipobject
 import meteorobject
 import random
+import math
 
 """
     :returns an array of all the raypoints at the current object coordinates
@@ -9,17 +10,19 @@ def get_raypoints(object):
     hw = (object.width / 2)
     hh = (object.height / 2)
 
+    diag_offset = object.sight/math.sqrt(2)
+
     pt1 = [object.x - hw - object.sight, object.y]
-    pt2 = [pt1[0], pt1[1] + hh + object.sight]
+    pt2 = [object.x - hw - diag_offset, object.y + hh + diag_offset]
 
     pt3 = [object.x, object.y + hh + object.sight]
-    pt4 = [pt3[0] + hw + object.sight, pt3[1]]
+    pt4 = [object.x + hw + diag_offset, pt2[1]]
 
     pt5 = [object.x + hw + object.sight, object.y]
-    pt6 = [pt5[0], pt5[1] - hh - object.sight]
+    pt6 = [pt4[0], object.y - hh - diag_offset]
 
     pt7 = [object.x, object.y - hh - object.sight]
-    pt8 = [pt7[0] - hw - object.sight, pt7[1]]
+    pt8 = [pt2[0], pt6[1]]
 
     return [pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8]
 
