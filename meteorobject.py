@@ -7,10 +7,19 @@ class MeteorObject(pyglet.sprite.Sprite):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.speed = 100
+        self.speed = 1
         self.x, self.y = utils.get_spawn_coords(self)
         self.dx, self.dy = self.calc_velocity_vector()
         self.corner_points = utils.get_corner_points(self)
+
+        #### FOR THE QUADTREE ITEM IMPLEMENTATION ####
+        self.left = self.corner_points[0][0]
+        self.top = self.corner_points[0][1]
+        self.right = self.corner_points[1][0]
+        self.bottom = self.corner_points[1][1]
+        # The variable names don't make sense but I don't
+        # want to rummage through the QuadTree implementation
+        ##############################################
 
     def calc_velocity_vector(self):
         dx = 400-self.x

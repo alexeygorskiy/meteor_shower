@@ -2,6 +2,7 @@ import pyglet
 import spaceshipobject
 import meteorobject
 import utils
+import quadtree
 
 pyglet.resource.path = ['resources/']
 pyglet.resource.reindex()
@@ -85,8 +86,20 @@ def reset():
 """
 def update(dt):
     highest_fitness = 0
-    alive_individuals = 0
+    alive_individuals = population_size
+    #alive_individuals = 0
 
+    for meteor in meteors:
+        meteor.update(dt=dt)
+    tree = quadtree.QuadTree(meteors)
+
+    for spaceship in spaceships:
+        if spaceship.dead:
+            continue
+
+        if len(tree.hit(spaceship)) > 0:
+            spaceship.dead = True
+            spaceship.visible = False
 
 
     """

@@ -1,5 +1,3 @@
-import random
-
 """http://www.pygame.org/wiki/QuadTree"""
 class QuadTree(object):
     """An implementation of a quad-tree.
@@ -137,16 +135,24 @@ class Item(object):
         self.right = right
         self.bottom = bottom
 
-items = []
+#items = []
+"""
 for i in range(100):
     x = random.uniform(-5000, 5000)
     y = random.uniform(-5000, 5000)
     w = 5 + random.expovariate(1.0/50)
     h = 5 + random.expovariate(1.0/50)
     items.append(Item(x, y, x+w, y+h))
+"""
+#items.append(Item(495,695,505,705)) # add all meteors
 
-tree = QuadTree(items)
 
-collisions = tree.hit(Item(0,0,800,800))
+#tree = QuadTree(items)
 
-print("yes")
+# Item: left bottom corner, right top corner
+#collisions1 = tree.hit(Item(500,700,500,700))    # ray point
+#collisions2 = tree.hit(Item(485,685,495,695))    # spaceship
+
+
+
+#print("yes")
