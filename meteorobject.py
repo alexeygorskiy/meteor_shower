@@ -14,11 +14,9 @@ class MeteorObject(pyglet.sprite.Sprite):
 
         #### FOR THE QUADTREE ITEM IMPLEMENTATION ####
         self.left = self.corner_points[0][0]
-        self.top = self.corner_points[0][1]
+        self.bottom = self.corner_points[0][1]
         self.right = self.corner_points[1][0]
-        self.bottom = self.corner_points[1][1]
-        # The variable names don't make sense but I don't
-        # want to rummage through the QuadTree implementation
+        self.top = self.corner_points[1][1]
         ##############################################
 
     def calc_velocity_vector(self):
@@ -44,6 +42,11 @@ class MeteorObject(pyglet.sprite.Sprite):
             pt[0] += self.dx/100
             pt[1] += self.dy/100
 
+        self.left = self.corner_points[0][0]
+        self.bottom = self.corner_points[0][1]
+        self.right = self.corner_points[1][0]
+        self.top = self.corner_points[1][1]
+
     def update(self, dt):
         self.move()
         if utils.is_outside_map(self.x, self.y):
@@ -51,6 +54,11 @@ class MeteorObject(pyglet.sprite.Sprite):
 
     def reset(self):
         self.x, self.y = utils.get_spawn_coords(self)
-        self.corner_points = utils.get_corner_points(self)
         self.dx, self.dy = self.calc_velocity_vector()
+
+        self.corner_points = utils.get_corner_points(self)
+        self.left = self.corner_points[0][0]
+        self.bottom = self.corner_points[0][1]
+        self.right = self.corner_points[1][0]
+        self.top = self.corner_points[1][1]
 

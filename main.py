@@ -91,7 +91,7 @@ def update(dt):
 
     for meteor in meteors:
         meteor.update(dt=dt)
-    tree = quadtree.QuadTree(meteors)
+    tree = quadtree.QuadTree(meteors, bounding_rect=(0,0,800,800))
 
     for spaceship in spaceships:
         if spaceship.dead:
@@ -100,6 +100,16 @@ def update(dt):
         if len(tree.hit(spaceship)) > 0:
             spaceship.dead = True
             spaceship.visible = False
+            continue
+        """
+        colliding = []
+        for pt in spaceship.ray_points:
+            colliding.append(1 if len(tree.hit(pt[0], pt[1], pt[0], pt[1])) > 0 or utils.is_outside_map(pt[0], pt[1]) else 0)
+
+        spaceship.last_collisions = spaceship.collisions
+        spaceship.collisions = colliding
+        """
+
 
 
     """
@@ -163,3 +173,4 @@ pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
 
 
+# TODO: improve quadtree implementation to not return everything, just return as soon as len(hits)>0

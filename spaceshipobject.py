@@ -42,9 +42,9 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         #### FOR THE QUADTREE ITEM IMPLEMENTATION ####
         self.corner_points = utils.get_corner_points(self)
         self.left = self.corner_points[0][0]
-        self.top = self.corner_points[0][1]
+        self.bottom = self.corner_points[0][1]
         self.right = self.corner_points[1][0]
-        self.bottom = self.corner_points[1][1]
+        self.top = self.corner_points[1][1]
         # The variable names don't make sense but I don't
         # want to rummage through the QuadTree implementation
         ##############################################
@@ -62,9 +62,9 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         # QUADTREE
         self.corner_points = utils.get_corner_points(self)
         self.left = self.corner_points[0][0]
-        self.top = self.corner_points[0][1]
+        self.bottom = self.corner_points[0][1]
         self.right = self.corner_points[1][0]
-        self.bottom = self.corner_points[1][1]
+        self.top = self.corner_points[1][1]
 
     """
         method for moving self using the keyboard keys
@@ -116,6 +116,11 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         for point in self.corner_points:
             point[0] += dx
             point[1] += dy
+
+        self.left = self.corner_points[0][0]
+        self.bottom = self.corner_points[0][1]
+        self.right = self.corner_points[1][0]
+        self.top = self.corner_points[1][1]
 
         self.fitness += self.alive_reward
         if dx != 0 or dy != 0:
