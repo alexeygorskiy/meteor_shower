@@ -51,7 +51,6 @@ class QuadTree(object):
 
         # Find this quadrant's centre.
         if bounding_rect:
-            #l, t, r, b = bounding_rect
             l, b, r, t = bounding_rect
 
         else:
@@ -90,18 +89,12 @@ class QuadTree(object):
 
         # Create the sub-quadrants, recursively.
         if nw_items:
-            # l, t, r, b = bounding_rect ORIGINAL
-            # l, b, r, t = bounding_rect CHANGED
-            #self.nw = QuadTree(nw_items, depth, (l, t, cx, cy))
             self.nw = QuadTree(nw_items, depth, (l, cy, cx, t))
         if ne_items:
-            #self.ne = QuadTree(ne_items, depth, (cx, t, r, cy))
             self.ne = QuadTree(ne_items, depth, (cx, cy, r, t))
         if se_items:
-            #self.se = QuadTree(se_items, depth, (cx, cy, r, b))
             self.se = QuadTree(se_items, depth, (cx, b, r, cy))
         if sw_items:
-            #self.sw = QuadTree(sw_items, depth, (l, cy, cx, b))
             self.sw = QuadTree(sw_items, depth, (l, b, cx, cy))
 
     def hit(self, left_bottom_corner, right_top_corner):
@@ -130,48 +123,20 @@ class QuadTree(object):
 
         # Find the hits at the current level.
         hits = set(item for item in self.items if overlaps(item))
+        if len(hits) > 0:
+            return True
 
         # Recursively check the lower quadrants.
         if self.nw and left <= self.cx and top >= self.cy:
-            hits |= self.nw.hit(left_bottom_corner, right_top_corner)
+            return self.nw.hit(left_bottom_corner, right_top_corner)
         if self.sw and left <= self.cx and bottom <= self.cy:
-            hits |= self.sw.hit(left_bottom_corner, right_top_corner)
+            return self.sw.hit(left_bottom_corner, right_top_corner)
         if self.ne and right >= self.cx and top >= self.cy:
-            hits |= self.ne.hit(left_bottom_corner, right_top_corner)
+            return self.ne.hit(left_bottom_corner, right_top_corner)
         if self.se and right >= self.cx and bottom <= self.cy:
-            hits |= self.se.hit(left_bottom_corner, right_top_corner)
+            return self.se.hit(left_bottom_corner, right_top_corner)
 
-        return hits
-
-
-class Item(object):
-    def __init__(self, left, bottom, right, top):
-        self.left = left
-        self.bottom = bottom
-        self.right = right
-        self.top = top
-
-
-"""
-meteors = []
-#spaceship = Item(755, 482, 765, 492)
-#raypoint = Item(765, 492, 765, 492)
-raypoint = [0, 0]
-
-
-meteors.append(Item(765, 492, 775, 502))
-tree = QuadTree(items=meteors, bounding_rect=(0,0,800,800))
-
-collisions = tree.hit(raypoint, raypoint)
-
-print("Yes")
-"""
-#tree = QuadTree(items)
-
-# Item: left bottom corner, right top corner
-#collisions1 = tree.hit(Item(500,700,500,700))    # ray point
-#collisions2 = tree.hit(Item(485,685,495,695))    # spaceship
-
-
-
-#print("yes")
+        if len(hits) > 0:
+            return True
+        else:
+            return False

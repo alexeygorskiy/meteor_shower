@@ -23,26 +23,6 @@ def get_raypoints(object):
 
     return [pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8]
 
-"""
-    https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
-"""
-def collision_detected(meteor, spaceship):
-    return (meteor.x < spaceship.x + spaceship.width and
-            meteor.x + meteor.width > spaceship.x and
-            meteor.y < spaceship.y + spaceship.height and
-            meteor.y + meteor.height > spaceship.y)
-
-"""
-    https://www.geeksforgeeks.org/check-if-a-point-lies-on-or-inside-a-rectangle-set-2/#:~:text=A%20point%20lies%20inside%20or,right%20and%20top%2Dleft%20coordinates.
-"""
-def point_colliding(pt, meteor):
-    # used for raypoint collision
-    # corner_points[0]: bottom left corner
-    # corner_points[1]: top right corner
-    return (meteor.corner_points[0][0] < pt[0] < meteor.corner_points[1][0] and
-            meteor.corner_points[0][1] < pt[1] < meteor.corner_points[1][1])
-
-
 def is_outside_map(x, y):
     return not (0 <= x <= 800 and 0 <= y <= 800)
 
@@ -56,7 +36,6 @@ def get_corner_points(object):
     return [bottom_left, top_right]
 
 def get_spawn_coords(object):
-
     # meteor spawn logic
     if isinstance(object, meteorobject.MeteorObject):
         area = random.randint(0, 3)

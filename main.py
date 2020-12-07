@@ -6,16 +6,20 @@ import quadtree
 
 pyglet.resource.path = ['resources/']
 pyglet.resource.reindex()
-spaceship_img = pyglet.resource.image("car.png")
-best_fitness_img = pyglet.resource.image("car_green.png")
+spaceship_img = pyglet.resource.image("spaceship.png")
 meteor_img = pyglet.resource.image("meteor.png")
 border_img = pyglet.resource.image("border.png")
 utils.center_img(spaceship_img)
-utils.center_img(best_fitness_img)
 utils.center_img(meteor_img)
 utils.center_img(border_img)
+
+spaceship_pts_imgs = [pyglet.resource.image("spaceship_pt" + str(i) + ".png") for i in range(0, 8)]
+for img in spaceship_pts_imgs:
+    utils.center_img(img)
+
 game_window = pyglet.window.Window(800, 1000, caption="Meteor Shower", visible=False)
 fps_display = pyglet.window.FPSDisplay(game_window)
+
 
 game_window.set_location(900, 25)
 meteors_batch = pyglet.graphics.Batch()
@@ -104,22 +108,33 @@ def update(dt):
         if spaceship.dead:
             continue
 
-        if len(tree.hit(spaceship.corner_points[0], spaceship.corner_points[1])) > 0:
+        if tree.hit(spaceship.corner_points[0], spaceship.corner_points[1]):
             spaceship.dead = True
             spaceship.visible = False
             continue
 
         colliding = []
-        for pt in spaceship.ray_points:
-            colliding.append(1 if len(tree.hit([pt[0], pt[1]], [pt[0], pt[1]])) > 0 or utils.is_outside_map(pt[0], pt[1]) else 0)
+        collision_detected = False
+        for i in range(0, len(spaceship.ray_points)):
+            ray_pt = [spaceship.ray_points[i][0], spaceship.ray_points[i][1]]
+            if tree.hit(left_bottom_corner=ray_pt, right_top_corner=ray_pt) or utils.is_outside_map(ray_pt[0], ray_pt[1]):
+                colliding.append(1)
+                spaceship.image = spaceship_pts_imgs[i]
+                collision_detected = True
+            else:
+                colliding.append(0)
 
         spaceship.last_collisions = spaceship.collisions
         spaceship.collisions = colliding
+
+        if not collision_detected:
+            spaceship.image = spaceship_img
 
         spaceship.update(dt=dt)
         alive_individuals += 1
         if spaceship.fitness > highest_fitness:
             highest_fitness = spaceship.fitness
+    # done looping through all the spaceships
 
     labels[0].text = "FPS: " + str(fps_display.label.text)
     labels[1].text = "Best Fitness This Generation: " + str(round(highest_fitness))
@@ -128,8 +143,7 @@ def update(dt):
     labels[4].text = "Population Restarts: " + str(restarts)
     labels[5].text = "Avg. Fitness Best Generation: " + str(round(avg_fitness_last_generation))
     labels[6].text = "Pop. Rollbacks Current Generation: " + str(population_rollbacks)
-    # labels[6] is used to display the "Avg. Fitness Last Generation"
-
+    # labels[7] is used to display the "Avg. Fitness Last Generation"
 
     if alive_individuals <= int(population_size/4):
         pyglet.clock.unschedule(update)  # unschedule until the reset is done
@@ -149,10 +163,10 @@ game_window.set_visible()
 pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
 
-
-
 # TODO: take diversity into account
 # TODO: change their speeds. the spaceships HAVE TO BE FASTER (always)
-# TODO: see if you can optimise quadtree or anything else
-# TODO: improve quadtree implementation to not return everything, just return as soon as len(hits)>0
 # TODO: read through the quadtree page and see about the optimisation
+# TODO: velocities are calculated based on the position of a random alive spaceship hehe
+# TODO: this will give a better spread and make sure they all die if they don't learn :D
+# TODO: look into the problem of them not not detecting certain things
+
