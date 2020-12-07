@@ -104,7 +104,7 @@ class QuadTree(object):
             #self.sw = QuadTree(sw_items, depth, (l, cy, cx, b))
             self.sw = QuadTree(sw_items, depth, (l, b, cx, cy))
 
-    def hit(self, rect):
+    def hit(self, left_bottom_corner, right_top_corner):
         """Returns the items that overlap a bounding rectangle.
 
         Returns the set of all items in the quad-tree that overlap with a
@@ -115,36 +115,35 @@ class QuadTree(object):
             must possess left, top, right and bottom attributes.
         """
 
-        #rect.left =
-        #rect.bottom =
-        #rect.right =
-        #rect.top =
-
+        left = left_bottom_corner[0]
+        bottom = left_bottom_corner[1]
+        right = right_top_corner[0]
+        top = right_top_corner[1]
 
         def overlaps(item):
             """https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection"""
-            return (rect.left <= item.right and
-                   rect.right >= item.left and
-                    rect.bottom <= item.top and
-                    rect.top >= item.bottom)
+            return (left <= item.right and
+                   right >= item.left and
+                    bottom <= item.top and
+                    top >= item.bottom)
 
 
         # Find the hits at the current level.
         hits = set(item for item in self.items if overlaps(item))
 
         # Recursively check the lower quadrants.
-        if self.nw and rect.left <= self.cx and rect.top >= self.cy:
-            hits |= self.nw.hit(rect)
-        if self.sw and rect.left <= self.cx and rect.bottom <= self.cy:
-            hits |= self.sw.hit(rect)
-        if self.ne and rect.right >= self.cx and rect.top >= self.cy:
-            hits |= self.ne.hit(rect)
-        if self.se and rect.right >= self.cx and rect.bottom <= self.cy:
-            hits |= self.se.hit(rect)
+        if self.nw and left <= self.cx and top >= self.cy:
+            hits |= self.nw.hit(left_bottom_corner, right_top_corner)
+        if self.sw and left <= self.cx and bottom <= self.cy:
+            hits |= self.sw.hit(left_bottom_corner, right_top_corner)
+        if self.ne and right >= self.cx and top >= self.cy:
+            hits |= self.ne.hit(left_bottom_corner, right_top_corner)
+        if self.se and right >= self.cx and bottom <= self.cy:
+            hits |= self.se.hit(left_bottom_corner, right_top_corner)
 
         return hits
 
-"""
+
 class Item(object):
     def __init__(self, left, bottom, right, top):
         self.left = left
@@ -153,15 +152,17 @@ class Item(object):
         self.top = top
 
 
-
+"""
 meteors = []
 #spaceship = Item(755, 482, 765, 492)
-raypoint = Item(770, 495, 770, 495)
+#raypoint = Item(765, 492, 765, 492)
+raypoint = [0, 0]
+
 
 meteors.append(Item(765, 492, 775, 502))
 tree = QuadTree(items=meteors, bounding_rect=(0,0,800,800))
 
-collisions = tree.hit(raypoint)
+collisions = tree.hit(raypoint, raypoint)
 
 print("Yes")
 """

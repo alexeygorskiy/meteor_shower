@@ -133,8 +133,9 @@ class SpaceshipObject(pyglet.sprite.Sprite):
             self.move_ai()
 
     def update(self, dt):
-        if self.dead:
-            return
+        # update won't be called if it is dead
+        #if self.dead:
+        #    return
 
         self.move()
 
