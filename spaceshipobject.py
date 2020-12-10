@@ -22,12 +22,10 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         # with the current width and height having more sight than 7 will
         # allow certain meteors to sneak through its line of sight
         self.sight = 7
-        self.speed = 1
+        self.speed = self.sight/2   # can move within half of its sight radius
 
         # added every time update is called as long as self.dead is False
         self.alive_reward = 0.1
-        # added every time update is called if the spaceship moves
-        self.movement_reward = 0
 
         # state
         # always zeros, so make sure to set (self.x, self.y) to somewhere where there is no initial collisions
@@ -93,6 +91,14 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         dx = self.speed*decisions[0][0]
         dy = self.speed*decisions[0][1]
 
+        sum = ((dx)**2 + (dy)**2)**(0.5)
+
+        if sum == 0:
+          return
+
+        dx = (dx * self.speed) / sum
+        dy = (dy * self.speed) / sum
+
         self.x += dx
         self.y += dy
 
@@ -104,9 +110,10 @@ class SpaceshipObject(pyglet.sprite.Sprite):
             point[0] += dx
             point[1] += dy
 
+
+    def update_fitness(self):
         self.fitness += self.alive_reward
-        if dx != 0 or dy != 0:
-            self.fitness += self.movement_reward
+
 
     def move(self):
         if self.human_controlled:
@@ -115,13 +122,12 @@ class SpaceshipObject(pyglet.sprite.Sprite):
             self.move_ai()
 
     def update(self, dt):
-        # update won't be called if it is dead
-        #if self.dead:
-        #    return
-
         self.move()
 
         if utils.is_outside_map(self.x, self.y):
             self.dead = True
             self.visible = False
+            return
+
+        self.update_fitness()
 
