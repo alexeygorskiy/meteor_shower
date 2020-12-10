@@ -60,3 +60,18 @@ class Brain:
         # to only loop through the rows
 
         self.model.set_weights(new_weights)
+
+    def get_weight_sum(self):
+        # biases included
+        # the sign of the weights is also included
+        sum = 0
+        weights = self.model.get_weights()
+        for layer in range(0, len(weights)):
+            for row in range(0, weights[layer].shape[0]):
+                if (layer % 2) == 0:  # for non-bias weight layers
+                    for col in range(0, weights[layer].shape[1]):
+                        sum += weights[layer][row][col]
+                else:   # for bias weight layers
+                    sum += weights[layer][row]
+        return sum
+

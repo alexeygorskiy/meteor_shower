@@ -71,11 +71,11 @@ def center_img(img):
     returns the weights and indices of the best individuals from the population equal to the number_of_parents variable 
     :returns (array of best weights, array of best indices)
 """
-def find_best_parent_weights(spaceships, number_of_parents):
+def find_best_parent_weights(spaceships, number_of_parents, avg_weight_sum):
     spaceships_dict = {}
 
     for i in range(len(spaceships)):
-        spaceships_dict[i] = spaceships[i].fitness
+        spaceships_dict[i] = spaceships[i].fitness * abs(avg_weight_sum-spaceships[i].weight_sum)
 
     # sort by fitness in descending order
     spaceships_dict = sorted(spaceships_dict.items(), key=lambda x: x[1], reverse=True)

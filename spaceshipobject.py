@@ -38,6 +38,7 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         self.visible = True
         self.ray_points = utils.get_raypoints(self)
         self.corner_points = utils.get_corner_points(self)
+        self.weight_sum = self.brain.get_weight_sum()
 
     def reset(self):
         self.x, self.y = utils.get_spawn_coords(self)
@@ -49,6 +50,7 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         self.visible = True
         self.ray_points = utils.get_raypoints(self)
         self.corner_points = utils.get_corner_points(self)
+        self.weight_sum = self.brain.get_weight_sum()
 
 
     """

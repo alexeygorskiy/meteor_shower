@@ -34,6 +34,7 @@ number_of_parents = 8
 generation = 0
 restarts = 0
 avg_fitness_last_generation = -99999
+avg_weight_sum_last_generation = -99999
 highest_fitness = 0
 population_rollbacks = 0
 num_meteors = 25
@@ -50,7 +51,7 @@ last_generation_spaceships = spaceships
 meteors = [meteorobject.MeteorObject(target_coords=alive_spaceship_coords, img=meteor_img, batch=meteors_batch, subpixel=True) for i in range(num_meteors)]
 
 # labels
-number_of_labels = 9
+number_of_labels = 12
 labels = []
 for i in range(number_of_labels):
     if i < 5:
@@ -66,6 +67,7 @@ def reset():
     global generation
     global last_generation_spaceships
     global avg_fitness_last_generation
+    global avg_weight_sum_last_generation
     global spaceships
     global restarts
     global population_rollbacks
@@ -73,27 +75,31 @@ def reset():
     global alive_spaceship_coords
 
     avg_fitness_this_generation = 0
+    avg_weight_sum_this_generation = 0
 
     for spaceship in spaceships:
         avg_fitness_this_generation += spaceship.fitness
+        avg_weight_sum_this_generation += spaceship.weight_sum
     avg_fitness_this_generation /= len(spaceships)
+    avg_weight_sum_this_generation /= len(spaceships)
 
     # the fitness of this generation will be displayed as the fitness of the last
     # generation when the next generation begins
     labels[8].text = "Avg. Fitness Last Generation: " + str(round(avg_fitness_this_generation))
+    labels[10].text = "Avg. Weight Sum Last Generation: " + str(round(avg_weight_sum_this_generation,3))
 
     if avg_fitness_this_generation <= avg_fitness_last_generation:    # last generation was better, reset to last
         spaceships = last_generation_spaceships     # last gen pre-evolution and pre-reset
         population_rollbacks += 1
     else:   # if current generation is better than last, keep them and update them to the best
         avg_fitness_last_generation = avg_fitness_this_generation
+        avg_weight_sum_last_generation = avg_weight_sum_this_generation
         last_generation_spaceships = spaceships     # pre-evolution and pre-reset
         population_rollbacks = 0
 
-    # case 1: everybody died without a single reward, will pick random parents and evolve randomly
-    # case 2: restart to last generation, will pick best parents from last generation and evolve again
-    # case 3: current generation better than last, will evolve the current generation
-    best_parent_weights = utils.find_best_parent_weights(spaceships, number_of_parents)
+    # case 1: restart to last generation, will pick best parents from last generation and evolve again
+    # case 2: current generation better than last, will evolve the current generation
+    best_parent_weights = utils.find_best_parent_weights(spaceships, number_of_parents, avg_weight_sum_this_generation)
     alive_spaceship_coords = []
     for i in range(population_size):
         spaceships[i].brain.evolve(best_parent_weights[0])
@@ -156,13 +162,16 @@ def update(dt):
 
     labels[0].text = "FPS: " + str(fps_display.label.text)
     labels[1].text = "Simulation Time: " + str(int(time.time() - begin_time)) + " s."
-    labels[2].text = "Best Fitness This Generation: " + str(round(highest_fitness))
-    labels[3].text = "Current Generation: " + str(generation)
+    labels[2].text = "Current Generation: " + str(generation)
+    labels[3].text = "Population Restarts: " + str(restarts)
     labels[4].text = "Alive Individuals: " + str(alive_individuals) + "/" + str(population_size)
-    labels[5].text = "Population Restarts: " + str(restarts)
-    labels[6].text = "Avg. Fitness Best Generation: " + str(round(avg_fitness_last_generation))
-    labels[7].text = "Pop. Rollbacks Current Generation: " + str(population_rollbacks)
+    labels[5].text = "Pop. Rollbacks Current Generation: " + str(population_rollbacks)
+
+    labels[6].text = "Best Fitness This Generation: " + str(round(highest_fitness))
+    labels[7].text = "Avg. Fitness Best Generation: " + str(round(avg_fitness_last_generation))
     # labels[8] is used to display the "Avg. Fitness Last Generation"
+    labels[9].text = "Avg. Weight Sum Best Generation: " + str(round(avg_weight_sum_last_generation,3))
+    # labels[10] is used to display the "Avg. Weight Sum Last Generation"
 
     if alive_individuals == 0:
         pyglet.clock.unschedule(update)  # unschedule until the reset is done
@@ -181,6 +190,8 @@ game_window.set_visible()
 pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
 
-# TODO: take diversity into accounts
 # TODO: for the github/portfolio/gif show the best of every population (save the best ones or replay it somehow)
 # TODO: (very long term or not at all) replace ray points with ray lines instead so they know the distance as well
+# TODO: always possible to draw only every x generation
+# TODO: evolve topology?
+
