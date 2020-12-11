@@ -1,7 +1,7 @@
 import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
-from random import randint, uniform
+import random
 
 class Brain:
     def __init__(self):
@@ -41,21 +41,21 @@ class Brain:
                 if (layer % 2) == 0:  # for non-bias weight layers
                     for col in range(0, parent_weights[0][layer].shape[1]):
                         # crossover
-                        parent = randint(0, len(parent_weights) - 1)
+                        parent = random.randint(0, len(parent_weights) - 1)
                         new_weights[layer][row][col] = parent_weights[parent][layer][row][col]
 
                         # mutation
-                        if randint(0, 100) < self.mutation_rate:
-                            new_weights[layer][row][col] += uniform(-0.5, 0.5)
+                        if random.randint(0, 100) < self.mutation_rate:
+                            new_weights[layer][row][col] += random.uniform(-0.5, 0.5)
 
                 else:  # for bias weight layers
                     # crossover
-                    parent = randint(0, len(parent_weights) - 1)
+                    parent = random.randint(0, len(parent_weights) - 1)
                     new_weights[layer][row] = parent_weights[parent][layer][row]
 
                     # mutation
-                    if randint(0, 100) < self.mutation_rate:
-                        new_weights[layer][row] += uniform(-0.5, 0.5)
+                    if random.randint(0, 100) < self.mutation_rate:
+                        new_weights[layer][row] += random.uniform(-0.5, 0.5)
         # bias layers only have rows so a different loop is used for every odd layer, which is a bias layer,
         # to only loop through the rows
 

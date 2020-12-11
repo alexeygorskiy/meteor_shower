@@ -1,8 +1,6 @@
 import pyglet
-import spaceshipobject
-import meteorobject
-import utils
-import quadtree
+from objects import spaceshipobject, meteorobject
+from utils import utils, quadtree
 import time
 
 begin_time = time.time()
@@ -190,8 +188,13 @@ game_window.set_visible()
 pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
 
+# TODO: review code
 # TODO: for the github/portfolio/gif show the best of every population (save the best ones or replay it somehow)
 # TODO: (very long term or not at all) replace ray points with ray lines instead so they know the distance as well
 # TODO: always possible to draw only every x generation
 # TODO: evolve topology?
+# TODO: try quadratic diversity multiplier so it's forced to seek out newer solutions? -> do some benchmarking with and without diversity
+# TODO: ... -> maybe even show comparisons of the algorithm without diversity
+# TODO: export the best weights 
+
 

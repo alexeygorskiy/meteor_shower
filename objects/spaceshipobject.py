@@ -1,7 +1,7 @@
 import pyglet
 from pyglet.window import key
-from brain import Brain
-import utils
+from brain import brain
+from utils import utils
 
 class SpaceshipObject(pyglet.sprite.Sprite):
 
@@ -17,7 +17,7 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         self.human_controlled = human_controlled
         if human_controlled:
             self.key_handler = key.KeyStateHandler()
-        self.brain = Brain()
+        self.brain = brain.Brain()
 
         # with the current width and height having more sight than 7 will
         # allow certain meteors to sneak through its line of sight

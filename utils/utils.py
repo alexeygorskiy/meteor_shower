@@ -1,5 +1,4 @@
-import spaceshipobject
-import meteorobject
+from objects import spaceshipobject, meteorobject
 import random
 import math
 

@@ -1,6 +1,6 @@
 import pyglet
 import random
-import utils
+from utils import utils
 
 class MeteorObject(pyglet.sprite.Sprite):
     def __init__(self, target_coords, *args, **kwargs):
