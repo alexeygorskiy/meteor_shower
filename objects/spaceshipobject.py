@@ -5,7 +5,7 @@ from utils import utils
 
 class SpaceshipObject(pyglet.sprite.Sprite):
 
-    def __init__(self, human_controlled=False, *args, **kwargs):
+    def __init__(self, human_controlled=False, model_filepath = "", *args, **kwargs):
         super().__init__(*args, **kwargs)
         """
             --------------   NOTE:   --------------
@@ -17,7 +17,11 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         self.human_controlled = human_controlled
         if human_controlled:
             self.key_handler = key.KeyStateHandler()
+
         self.brain = brain.Brain()
+
+        if not model_filepath == "":
+            self.brain.load_saved_brain(path=model_filepath)
 
         # with the current width and height having more sight than 7 will
         # allow certain meteors to sneak through its line of sight

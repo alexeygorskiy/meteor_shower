@@ -75,3 +75,10 @@ class Brain:
                     sum += weights[layer][row]
         return sum
 
+    def load_saved_brain(self, path):
+        self.model = keras.models.load_model(filepath=path)
+
+    def save_current_brain(self, path):
+        self.model.save(filepath=path)
+
+

@@ -78,6 +78,10 @@ def reset():
     for spaceship in spaceships:
         avg_fitness_this_generation += spaceship.fitness
         avg_weight_sum_this_generation += spaceship.weight_sum
+        if generation % 5 == 0 and spaceship.fitness == highest_fitness:
+            spaceship.brain.save_current_brain(path="saved_models/gen" + str(generation) + "_fitness" + str(round(highest_fitness)))
+
+
     avg_fitness_this_generation /= len(spaceships)
     avg_weight_sum_this_generation /= len(spaceships)
 
@@ -188,13 +192,10 @@ game_window.set_visible()
 pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
 
-# TODO: review code
-# TODO: for the github/portfolio/gif show the best of every population (save the best ones or replay it somehow)
+
+# TODO: as last the thing: review code
+# TODO: (very long term or not at all) do a comparison with and without diversity
 # TODO: (very long term or not at all) replace ray points with ray lines instead so they know the distance as well
-# TODO: always possible to draw only every x generation
-# TODO: evolve topology?
-# TODO: try quadratic diversity multiplier so it's forced to seek out newer solutions? -> do some benchmarking with and without diversity
-# TODO: ... -> maybe even show comparisons of the algorithm without diversity
-# TODO: export the best weights 
+# TODO: (very long term or not at all) evolve topology
 
 
