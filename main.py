@@ -30,7 +30,6 @@ text_batch = pyglet.graphics.Batch()
 population_size = 100
 number_of_parents = 8
 generation = 0
-restarts = 0
 avg_fitness_last_generation = -99999
 avg_weight_sum_last_generation = -99999
 highest_fitness = 0
@@ -49,7 +48,7 @@ last_generation_spaceships = spaceships
 meteors = [meteorobject.MeteorObject(target_coords=alive_spaceship_coords, img=meteor_img, batch=meteors_batch, subpixel=True) for i in range(num_meteors)]
 
 # labels
-number_of_labels = 12
+number_of_labels = 11
 labels = []
 for i in range(number_of_labels):
     if i < 5:
@@ -67,7 +66,6 @@ def reset():
     global avg_fitness_last_generation
     global avg_weight_sum_last_generation
     global spaceships
-    global restarts
     global population_rollbacks
     global highest_fitness
     global alive_spaceship_coords
@@ -87,8 +85,8 @@ def reset():
 
     # the fitness of this generation will be displayed as the fitness of the last
     # generation when the next generation begins
-    labels[8].text = "Avg. Fitness Last Generation: " + str(round(avg_fitness_this_generation))
-    labels[10].text = "Avg. Weight Sum Last Generation: " + str(round(avg_weight_sum_this_generation,3))
+    labels[7].text = "Avg. Fitness Last Generation: " + str(round(avg_fitness_this_generation))
+    labels[9].text = "Avg. Weight Sum Last Generation: " + str(round(avg_weight_sum_this_generation,3))
 
     if avg_fitness_this_generation <= avg_fitness_last_generation:    # last generation was better, reset to last
         spaceships = last_generation_spaceships     # last gen pre-evolution and pre-reset
@@ -165,15 +163,14 @@ def update(dt):
     labels[0].text = "FPS: " + str(fps_display.label.text)
     labels[1].text = "Simulation Time: " + str(int(time.time() - begin_time)) + " s."
     labels[2].text = "Current Generation: " + str(generation)
-    labels[3].text = "Population Restarts: " + str(restarts)
-    labels[4].text = "Alive Individuals: " + str(alive_individuals) + "/" + str(population_size)
-    labels[5].text = "Pop. Rollbacks Current Generation: " + str(population_rollbacks)
+    labels[3].text = "Alive Individuals: " + str(alive_individuals) + "/" + str(population_size)
+    labels[4].text = "Pop. Rollbacks Current Generation: " + str(population_rollbacks)
 
-    labels[6].text = "Best Fitness This Generation: " + str(round(highest_fitness))
-    labels[7].text = "Avg. Fitness Best Generation: " + str(round(avg_fitness_last_generation))
-    # labels[8] is used to display the "Avg. Fitness Last Generation"
-    labels[9].text = "Avg. Weight Sum Best Generation: " + str(round(avg_weight_sum_last_generation,3))
-    # labels[10] is used to display the "Avg. Weight Sum Last Generation"
+    labels[5].text = "Best Fitness This Generation: " + str(round(highest_fitness))
+    labels[6].text = "Avg. Fitness Best Generation: " + str(round(avg_fitness_last_generation))
+    # labels[7] is used to display the "Avg. Fitness Last Generation"
+    labels[8].text = "Avg. Weight Sum Best Generation: " + str(round(avg_weight_sum_last_generation,3))
+    # labels[9] is used to display the "Avg. Weight Sum Last Generation"
 
     if alive_individuals == 0:
         pyglet.clock.unschedule(update)  # unschedule until the reset is done
