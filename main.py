@@ -3,6 +3,12 @@ from objects import spaceshipobject, meteorobject
 from utils import utils, quadtree
 import time
 
+model_paths = ["saved_models/gen0_fitness111",
+               "saved_models/gen5_fitness153",
+               "saved_models/gen10_fitness160",
+               "saved_models/gen15_fitness174"]
+model_index = 0
+
 begin_time = time.time()
 pyglet.resource.path = ['resources/']
 pyglet.resource.reindex()
@@ -27,7 +33,7 @@ spaceships_batch = pyglet.graphics.Batch()
 text_batch = pyglet.graphics.Batch()
 
 # stats and settings
-population_size = 100
+population_size = 1
 number_of_parents = 8
 generation = 0
 restarts = 0
@@ -40,7 +46,7 @@ num_meteors = 25
 spaceships = []
 alive_spaceship_coords = []
 for i in range(population_size):
-    spaceships.append(spaceshipobject.SpaceshipObject(img=spaceship_img, batch=spaceships_batch, subpixel=True))
+    spaceships.append(spaceshipobject.SpaceshipObject(img=spaceship_img, batch=spaceships_batch, model_filepath=model_paths[model_index], subpixel=True))
     alive_spaceship_coords.append([spaceships[i].x, spaceships[i].y])
 
 # HUMAN_CONTROL: spaceships.append(physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch, human_controlled=True))
@@ -71,7 +77,23 @@ def reset():
     global population_rollbacks
     global highest_fitness
     global alive_spaceship_coords
+    global model_index
 
+    highest_fitness = 0
+    model_index += 1
+    if model_index == len(model_paths):
+        model_index = len(model_paths)-1
+
+    spaceships[0].brain.load_saved_brain(model_paths[model_index])
+    spaceships[0].reset()
+    alive_spaceship_coords = [[spaceships[0].x, spaceships[0].y]]
+
+    generation = model_index * 5
+
+    for meteor in meteors:
+        meteor.reset(target_coords=alive_spaceship_coords)
+
+    """
     avg_fitness_this_generation = 0
     avg_weight_sum_this_generation = 0
 
@@ -113,7 +135,7 @@ def reset():
 
     for meteor in meteors:
         meteor.reset(target_coords=alive_spaceship_coords)
-
+    """
 
 """
     updates all the individuals and checks if everyone is dead
@@ -163,16 +185,20 @@ def update(dt):
     # done looping through all the spaceships
 
     labels[0].text = "FPS: " + str(fps_display.label.text)
-    labels[1].text = "Simulation Time: " + str(int(time.time() - begin_time)) + " s."
-    labels[2].text = "Current Generation: " + str(generation)
-    labels[3].text = "Population Restarts: " + str(restarts)
-    labels[4].text = "Alive Individuals: " + str(alive_individuals) + "/" + str(population_size)
-    labels[5].text = "Pop. Rollbacks Current Generation: " + str(population_rollbacks)
+    labels[1].text = "Best of Generation: " + str(generation)
+    fitness_achieved = model_paths[model_index][len(model_paths[model_index])-3:len(model_paths[model_index])]
+    labels[2].text = "Fitness Achieved: " + fitness_achieved
+    labels[3].text = "Current Fitness: " + str(round(highest_fitness))
 
-    labels[6].text = "Best Fitness This Generation: " + str(round(highest_fitness))
-    labels[7].text = "Avg. Fitness Best Generation: " + str(round(avg_fitness_last_generation))
+
+    # labels[1].text = "Simulation Time: " + str(int(time.time() - begin_time)) + " s."
+    # labels[3].text = "Population Restarts: " + str(restarts)
+    # labels[4].text = "Alive Individuals: " + str(alive_individuals) + "/" + str(population_size)
+    # labels[5].text = "Pop. Rollbacks Current Generation: " + str(population_rollbacks)
+    # labels[6].text = "Best Fitness This Generation: " + str(round(highest_fitness))
+    # labels[7].text = "Avg. Fitness Best Generation: " + str(round(avg_fitness_last_generation))
     # labels[8] is used to display the "Avg. Fitness Last Generation"
-    labels[9].text = "Avg. Weight Sum Best Generation: " + str(round(avg_weight_sum_last_generation,3))
+    # labels[9].text = "Avg. Weight Sum Best Generation: " + str(round(avg_weight_sum_last_generation,3))
     # labels[10] is used to display the "Avg. Weight Sum Last Generation"
 
     if alive_individuals == 0:

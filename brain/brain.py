@@ -76,7 +76,7 @@ class Brain:
         return sum
 
     def load_saved_brain(self, path):
-        self.model = keras.models.load_model(filepath=path)
+        self.model = keras.models.load_model(filepath=path, compile=False)
 
     def save_current_brain(self, path):
         self.model.save(filepath=path)
