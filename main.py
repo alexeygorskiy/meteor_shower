@@ -3,11 +3,13 @@ from objects import spaceshipobject, meteorobject
 from utils import utils, quadtree
 import time
 
-model_paths = ["saved_models/gen0_fitness111",
-               "saved_models/gen5_fitness153",
-               "saved_models/gen10_fitness160",
-               "saved_models/gen15_fitness174"]
+model_paths = []
+model_gens = [0,5,10,15,20,50]
+model_fitness = [92,136,167,263,572,1053]
 model_index = 0
+for i in range(len(model_gens)):
+    model_paths.append("saved_models/gen" + str(model_gens[i]) + "_fitness" + str(model_fitness[i]))
+
 
 begin_time = time.time()
 pyglet.resource.path = ['resources/']
@@ -78,17 +80,20 @@ def reset():
     global highest_fitness
     global alive_spaceship_coords
     global model_index
+    global model_paths
+    global model_gens
+    global model_fitness
 
     highest_fitness = 0
     model_index += 1
-    if model_index == len(model_paths):
-        model_index = len(model_paths)-1
+    if model_index == len(model_gens):
+        model_index = len(model_gens)-1
 
     spaceships[0].brain.load_saved_brain(model_paths[model_index])
     spaceships[0].reset()
     alive_spaceship_coords = [[spaceships[0].x, spaceships[0].y]]
 
-    generation = model_index * 5
+    generation = model_gens[model_index]
 
     for meteor in meteors:
         meteor.reset(target_coords=alive_spaceship_coords)
@@ -186,8 +191,7 @@ def update(dt):
 
     labels[0].text = "FPS: " + str(fps_display.label.text)
     labels[1].text = "Best of Generation: " + str(generation)
-    fitness_achieved = model_paths[model_index][len(model_paths[model_index])-3:len(model_paths[model_index])]
-    labels[2].text = "Fitness Achieved: " + fitness_achieved
+    labels[2].text = "Fitness Achieved: " + str(model_fitness[model_index])
     labels[3].text = "Current Fitness: " + str(round(highest_fitness))
 
 
