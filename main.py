@@ -14,8 +14,11 @@ utils.center_img(meteor_img)
 utils.center_img(border_img)
 
 spaceship_pts_imgs = [pyglet.resource.image("spaceship_pt" + str(i) + ".png") for i in range(0, 8)]
-for img in spaceship_pts_imgs:
-    utils.center_img(img)
+spaceship_pts_imgs_purple = [pyglet.resource.image("spaceship_pt" + str(i) + "_purple.png") for i in range(0, 8)]
+
+for i in range(len(spaceship_pts_imgs)):
+    utils.center_img(spaceship_pts_imgs[i])
+    utils.center_img(spaceship_pts_imgs_purple[i])
 
 game_window = pyglet.window.Window(800, 950, caption="Meteor Shower", visible=False)
 fps_display = pyglet.window.FPSDisplay(game_window)
@@ -37,18 +40,17 @@ population_rollbacks = 0
 num_meteors = 25
 
 spaceships = []
-alive_spaceship_coords = []
 for i in range(population_size):
     spaceships.append(spaceshipobject.SpaceshipObject(img=spaceship_img, batch=spaceships_batch, subpixel=True))
-    alive_spaceship_coords.append([spaceships[i].x, spaceships[i].y])
 
 # HUMAN_CONTROL: spaceships.append(physicalobject.PhysicalObject(img=spaceship_img, x=50, y=50, batch=main_batch, human_controlled=True))
 last_generation_spaceships = spaceships
 
-meteors = [meteorobject.MeteorObject(target_coords=alive_spaceship_coords, img=meteor_img, batch=meteors_batch, subpixel=True) for i in range(num_meteors)]
+meteors = [meteorobject.MeteorObject(img=meteor_img, batch=meteors_batch, subpixel=True) for i in range(num_meteors)]
+tree = quadtree.QuadTree(meteors, bounding_rect=(0, 0, 800, 800))
 
 # labels
-number_of_labels = 11
+number_of_labels = 12
 labels = []
 for i in range(number_of_labels):
     if i < 5:
@@ -68,7 +70,6 @@ def reset():
     global spaceships
     global population_rollbacks
     global highest_fitness
-    global alive_spaceship_coords
 
     avg_fitness_this_generation = 0
     avg_weight_sum_this_generation = 0
@@ -100,17 +101,15 @@ def reset():
     # case 1: restart to last generation, will pick best parents from last generation and evolve again
     # case 2: current generation better than last, will evolve the current generation
     best_parent_weights = utils.find_best_parent_weights(spaceships, number_of_parents, avg_weight_sum_this_generation)
-    alive_spaceship_coords = []
     for i in range(population_size):
         spaceships[i].brain.evolve(best_parent_weights[0])
         spaceships[i].reset()
-        alive_spaceship_coords.append([spaceships[i].x, spaceships[i].y])
 
     generation += 1
     highest_fitness = 0
 
     for meteor in meteors:
-        meteor.reset(target_coords=alive_spaceship_coords)
+        meteor.reset()
 
 
 """
@@ -118,31 +117,34 @@ def reset():
 """
 def update(dt):
     global highest_fitness
-    global alive_spaceship_coords
+    global tree
+
     alive_individuals = 0
-
-    for meteor in meteors:
-        meteor.update(dt=dt, target_coords=alive_spaceship_coords)
-    tree = quadtree.QuadTree(meteors, bounding_rect=(0, 0, 800, 800))
-
-    alive_spaceship_coords = []
+    eaten_meteors = []
+    shortest_time_without_reward = 99999
 
     for spaceship in spaceships:
         if spaceship.dead:
             continue
 
-        if tree.hit(spaceship.corner_points[0], spaceship.corner_points[1]):
-            spaceship.dead = True
-            spaceship.visible = False
-            continue
+        hits = tree.hit(spaceship.corner_points[0], spaceship.corner_points[1])
+        if len(hits) > 0:
+            for meteor in hits:
+                meteor.eaten = True
+                eaten_meteors.append(meteor)
+            spaceship.update_fitness()
 
         colliding = []
         collision_detected = False
         for i in range(0, len(spaceship.ray_points)):
             ray_pt = [spaceship.ray_points[i][0], spaceship.ray_points[i][1]]
-            if tree.hit(left_bottom_corner=ray_pt, right_top_corner=ray_pt) or utils.is_outside_map(ray_pt[0], ray_pt[1]):
+            if tree.hit(left_bottom_corner=ray_pt, right_top_corner=ray_pt):
                 colliding.append(1)
                 spaceship.image = spaceship_pts_imgs[i]
+                collision_detected = True
+            elif utils.is_outside_map(ray_pt[0], ray_pt[1]):
+                colliding.append(-1)
+                spaceship.image = spaceship_pts_imgs_purple[i]
                 collision_detected = True
             else:
                 colliding.append(0)
@@ -155,10 +157,19 @@ def update(dt):
 
         spaceship.update(dt=dt)
         alive_individuals += 1
-        alive_spaceship_coords.append([spaceship.x, spaceship.y])
         if spaceship.fitness > highest_fitness:
             highest_fitness = spaceship.fitness
+
+        if spaceship.time_since_reward < shortest_time_without_reward:
+            shortest_time_without_reward = spaceship.time_since_reward
     # done looping through all the spaceships
+
+    # if any meteors have been eaten, respawn them and make a new tree
+    if len(eaten_meteors) > 0:
+        for meteor in eaten_meteors:
+            meteor.update(dt=dt)
+
+    tree = quadtree.QuadTree(meteors, bounding_rect=(0, 0, 800, 800))
 
     labels[0].text = "FPS: " + str(fps_display.label.text)
     labels[1].text = "Simulation Time: " + str(int(time.time() - begin_time)) + " s."
@@ -171,6 +182,7 @@ def update(dt):
     # labels[7] is used to display the "Avg. Fitness Last Generation"
     labels[8].text = "Avg. Weight Sum Best Generation: " + str(round(avg_weight_sum_last_generation,3))
     # labels[9] is used to display the "Avg. Weight Sum Last Generation"
+    labels[10].text = "Shortest Time Without Reward: " + str(shortest_time_without_reward)
 
     if alive_individuals == 0:
         pyglet.clock.unschedule(update)  # unschedule until the reset is done

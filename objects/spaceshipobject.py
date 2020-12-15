@@ -29,7 +29,8 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         self.speed = self.sight/2   # can move within half of its sight radius
 
         # added every time update is called as long as self.dead is False
-        self.alive_reward = 0.1
+        self.food_reward = 100
+        self.survival_time_without_reward = 500
 
         # state
         # always zeros, so make sure to set (self.x, self.y) to somewhere where there is no initial collisions
@@ -43,6 +44,7 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         self.ray_points = utils.get_raypoints(self)
         self.corner_points = utils.get_corner_points(self)
         self.weight_sum = self.brain.get_weight_sum()
+        self.time_since_reward = 0
 
     def reset(self):
         self.x, self.y = utils.get_spawn_coords(self)
@@ -55,6 +57,7 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         self.ray_points = utils.get_raypoints(self)
         self.corner_points = utils.get_corner_points(self)
         self.weight_sum = self.brain.get_weight_sum()
+        self.time_since_reward = 0
 
 
     """
@@ -118,8 +121,8 @@ class SpaceshipObject(pyglet.sprite.Sprite):
 
 
     def update_fitness(self):
-        self.fitness += self.alive_reward
-
+        self.time_since_reward = 0
+        self.fitness += self.food_reward
 
     def move(self):
         if self.human_controlled:
@@ -130,10 +133,14 @@ class SpaceshipObject(pyglet.sprite.Sprite):
     def update(self, dt):
         self.move()
 
+        self.time_since_reward += 1
+
         if utils.is_outside_map(self.x, self.y):
             self.dead = True
             self.visible = False
+            self.fitness -= self.food_reward
             return
-
-        self.update_fitness()
-
+        elif self.time_since_reward >= self.survival_time_without_reward:
+            self.dead = True
+            self.visible = False
+            return

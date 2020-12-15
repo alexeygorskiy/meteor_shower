@@ -120,23 +120,18 @@ class QuadTree(object):
                     bottom <= item.top and
                     top >= item.bottom)
 
-
         # Find the hits at the current level.
         hits = set(item for item in self.items if overlaps(item))
-        if len(hits) > 0:
-            return True
 
         # Recursively check the lower quadrants.
         if self.nw and left <= self.cx and top >= self.cy:
-            return self.nw.hit(left_bottom_corner, right_top_corner)
+            hits |= self.nw.hit(left_bottom_corner, right_top_corner)
         if self.sw and left <= self.cx and bottom <= self.cy:
-            return self.sw.hit(left_bottom_corner, right_top_corner)
+            hits |= self.sw.hit(left_bottom_corner, right_top_corner)
         if self.ne and right >= self.cx and top >= self.cy:
-            return self.ne.hit(left_bottom_corner, right_top_corner)
+            hits |= self.ne.hit(left_bottom_corner, right_top_corner)
         if self.se and right >= self.cx and bottom <= self.cy:
-            return self.se.hit(left_bottom_corner, right_top_corner)
+            hits |= self.se.hit(left_bottom_corner, right_top_corner)
 
-        if len(hits) > 0:
-            return True
-        else:
-            return False
+        return hits
+
