@@ -138,7 +138,7 @@ class SpaceshipObject(pyglet.sprite.Sprite):
         if utils.is_outside_map(self.x, self.y):
             self.dead = True
             self.visible = False
-            self.fitness -= self.food_reward
+            self.fitness -= self.food_reward/2
             return
         elif self.time_since_reward >= self.survival_time_without_reward:
             self.dead = True

@@ -74,11 +74,14 @@ def reset():
     avg_fitness_this_generation = 0
     avg_weight_sum_this_generation = 0
 
+    best_saved = False
+
     for spaceship in spaceships:
         avg_fitness_this_generation += spaceship.fitness
         avg_weight_sum_this_generation += spaceship.weight_sum
-        if generation % 5 == 0 and spaceship.fitness == highest_fitness:
+        if generation % 5 == 0 and spaceship.fitness == highest_fitness and not best_saved:
             spaceship.brain.save_current_brain(path="saved_models/gen" + str(generation) + "_fitness" + str(round(highest_fitness)))
+            best_saved = True
 
 
     avg_fitness_this_generation /= len(spaceships)

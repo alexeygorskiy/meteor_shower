@@ -40,22 +40,20 @@ def get_corner_points(object):
 def get_spawn_coords(object):
     # meteor spawn logic
     if isinstance(object, spaceshipobject.SpaceshipObject):
-        return 50, 50
-
-
+        # dont make them spawn around the edges!(they just evolve to all move in the same direction)
         area = random.randint(0, 3)
         if area == 0:
-            return random.randint(5, 795), 795
+            return random.randint(50, 100), random.randint(50, 100)
         elif area == 1:
-            return 795, random.randint(5, 795)
+            return random.randint(50, 100), random.randint(700, 750)
         elif area == 2:
-            return random.randint(5, 795), 5
+            return random.randint(700, 750), random.randint(700, 750)
         else:
-            return 5, random.randint(5, 795)
+            return random.randint(700, 750), random.randint(50, 100)
 
     # spaceship spawn logic
     elif isinstance(object, meteorobject.MeteorObject):
-        return random.randint(100, 795), random.randint(100, 795)
+        return random.randint(150, 650), random.randint(150, 650)
 
     # if object is none of the above raise an exception
     else:
