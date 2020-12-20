@@ -2,6 +2,9 @@ from objects import spaceshipobject, meteorobject
 import random
 import math
 
+def normalize(x):
+    return (x-400)/100
+
 """
     :returns an array of all the raypoints at the current object coordinates
 """
@@ -38,22 +41,21 @@ def get_corner_points(object):
     return [bottom_left, top_right]
 
 def get_spawn_coords(object):
-    # meteor spawn logic
+    #return random.randint(50, 750), random.randint(50, 750)
+
     if isinstance(object, spaceshipobject.SpaceshipObject):
-        # dont make them spawn around the edges!(they just evolve to all move in the same direction)
+        return random.randint(375, 425), random.randint(375, 425)
+
+    elif isinstance(object, meteorobject.MeteorObject):
         area = random.randint(0, 3)
         if area == 0:
-            return random.randint(50, 100), random.randint(50, 100)
+            return random.randint(350, 500), random.randint(450, 500)
         elif area == 1:
-            return random.randint(50, 100), random.randint(700, 750)
+            return random.randint(450, 500), random.randint(300, 450)
         elif area == 2:
-            return random.randint(700, 750), random.randint(700, 750)
+            return random.randint(300, 450), random.randint(300, 350)
         else:
-            return random.randint(700, 750), random.randint(50, 100)
-
-    # spaceship spawn logic
-    elif isinstance(object, meteorobject.MeteorObject):
-        return random.randint(150, 650), random.randint(150, 650)
+            return random.randint(300, 350), random.randint(350, 500)
 
     # if object is none of the above raise an exception
     else:
