@@ -98,50 +98,6 @@ def reset():
     for meteor in meteors:
         meteor.reset(target_coords=alive_spaceship_coords)
 
-    """
-    avg_fitness_this_generation = 0
-    avg_weight_sum_this_generation = 0
-
-    for spaceship in spaceships:
-        avg_fitness_this_generation += spaceship.fitness
-        avg_weight_sum_this_generation += spaceship.weight_sum
-        if generation % 5 == 0 and spaceship.fitness == highest_fitness:
-            spaceship.brain.save_current_brain(path="saved_models/gen" + str(generation) + "_fitness" + str(round(highest_fitness)))
-
-
-    avg_fitness_this_generation /= len(spaceships)
-    avg_weight_sum_this_generation /= len(spaceships)
-
-    # the fitness of this generation will be displayed as the fitness of the last
-    # generation when the next generation begins
-    labels[8].text = "Avg. Fitness Last Generation: " + str(round(avg_fitness_this_generation))
-    labels[10].text = "Avg. Weight Sum Last Generation: " + str(round(avg_weight_sum_this_generation,3))
-
-    if avg_fitness_this_generation <= avg_fitness_last_generation:    # last generation was better, reset to last
-        spaceships = last_generation_spaceships     # last gen pre-evolution and pre-reset
-        population_rollbacks += 1
-    else:   # if current generation is better than last, keep them and update them to the best
-        avg_fitness_last_generation = avg_fitness_this_generation
-        avg_weight_sum_last_generation = avg_weight_sum_this_generation
-        last_generation_spaceships = spaceships     # pre-evolution and pre-reset
-        population_rollbacks = 0
-
-    # case 1: restart to last generation, will pick best parents from last generation and evolve again
-    # case 2: current generation better than last, will evolve the current generation
-    best_parent_weights = utils.find_best_parent_weights(spaceships, number_of_parents, avg_weight_sum_this_generation)
-    alive_spaceship_coords = []
-    for i in range(population_size):
-        spaceships[i].brain.evolve(best_parent_weights[0])
-        spaceships[i].reset()
-        alive_spaceship_coords.append([spaceships[i].x, spaceships[i].y])
-
-    generation += 1
-    highest_fitness = 0
-
-    for meteor in meteors:
-        meteor.reset(target_coords=alive_spaceship_coords)
-    """
-
 """
     updates all the individuals and checks if everyone is dead
 """
@@ -194,17 +150,6 @@ def update(dt):
     labels[2].text = "Fitness Achieved: " + str(model_fitness[model_index])
     labels[3].text = "Current Fitness: " + str(round(highest_fitness))
 
-
-    # labels[1].text = "Simulation Time: " + str(int(time.time() - begin_time)) + " s."
-    # labels[3].text = "Population Restarts: " + str(restarts)
-    # labels[4].text = "Alive Individuals: " + str(alive_individuals) + "/" + str(population_size)
-    # labels[5].text = "Pop. Rollbacks Current Generation: " + str(population_rollbacks)
-    # labels[6].text = "Best Fitness This Generation: " + str(round(highest_fitness))
-    # labels[7].text = "Avg. Fitness Best Generation: " + str(round(avg_fitness_last_generation))
-    # labels[8] is used to display the "Avg. Fitness Last Generation"
-    # labels[9].text = "Avg. Weight Sum Best Generation: " + str(round(avg_weight_sum_last_generation,3))
-    # labels[10] is used to display the "Avg. Weight Sum Last Generation"
-
     if alive_individuals == 0:
         pyglet.clock.unschedule(update)  # unschedule until the reset is done
         reset()
@@ -221,11 +166,5 @@ def on_draw():
 game_window.set_visible()
 pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
-
-
-# TODO: as last the thing: review code
-# TODO: (very long term or not at all) do a comparison with and without diversity
-# TODO: (very long term or not at all) replace ray points with ray lines instead so they know the distance as well
-# TODO: (very long term or not at all) evolve topology
 
 
