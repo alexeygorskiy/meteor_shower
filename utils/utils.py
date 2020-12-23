@@ -41,8 +41,6 @@ def get_corner_points(object):
     return [bottom_left, top_right]
 
 def get_spawn_coords(object):
-    #return random.randint(50, 750), random.randint(50, 750)
-
     if isinstance(object, spaceshipobject.SpaceshipObject):
         return random.randint(375, 425), random.randint(375, 425)
 

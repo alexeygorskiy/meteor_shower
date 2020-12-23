@@ -6,7 +6,6 @@ class MeteorObject(pyglet.sprite.Sprite):
         super().__init__(*args, **kwargs)
 
         self.x, self.y = utils.get_spawn_coords(self)
-        #self.x, self.y = 400, 450
         self.eaten = False
 
         #### FOR THE QUADTREE ITEM IMPLEMENTATION ####
