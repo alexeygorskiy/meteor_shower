@@ -12,8 +12,6 @@ class Brain:
                 # layers.Dense(units=2, activation="tanh", input_shape=(1, 8))
             ]
         )
-        # if the bias_initializer argument is not passed, bias layers will be initialised as zeros
-        # and the individual will not move anywhere in the beginning, which slows down learning
 
     """
         given an array of ray_point_collisions (1x8), which indicates which points are colliding,

@@ -190,9 +190,3 @@ pyglet.clock.schedule_interval(update, 1/60.0)
 pyglet.app.run()
 
 
-# TODO: as last the thing: review code
-# TODO: (very long term or not at all) do a comparison with and without diversity
-# TODO: (very long term or not at all) replace ray points with ray lines instead so they know the distance as well
-# TODO: (very long term or not at all) evolve topology
-
-

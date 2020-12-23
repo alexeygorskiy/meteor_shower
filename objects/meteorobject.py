@@ -8,7 +8,7 @@ class MeteorObject(pyglet.sprite.Sprite):
 
         self.speed = 1.75  # movement limited to self.speed pixels in any direction, currently set to half spaceship speed
         self.x, self.y = utils.get_spawn_coords(self)
-        self.target_coords = target_coords
+        self.target_coords = target_coords  # target coordinates used to calculate the velocity vector
         self.dx, self.dy = self.calc_velocity_vector()
 
         #### FOR THE QUADTREE ITEM IMPLEMENTATION ####
